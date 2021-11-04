@@ -1,6 +1,7 @@
 mod vec3;
 mod draw;
 mod ray;
+mod shape;
 
 use std::fmt::{Display, Formatter};
 use crate::vec3::Vec3;
@@ -9,6 +10,7 @@ use crate::draw::write_color;
 use std::borrow::BorrowMut;
 use crate::ray::{point3, Ray};
 use std::io::Write;
+use crate::shape::hit_sphere;
 
 type Color = Vec3;
 
@@ -19,6 +21,9 @@ impl Display for Color{
 }
 
 fn ray_color(ray:Ray) -> Color{
+    if hit_sphere(point3{x :0.0 ,y : 0.0, z : -1.0}, 0.5, ray) {
+        return Color{x : 1.0, y : 0.0, z : 0.0}
+    }
     let unit_direction = ray.direction().unit_vector();
     let t = 0.5 * (unit_direction.y + 1.0);
     Color{x:1.0, y:1.0, z:1.0} * (1.0-t) + Color{x:0.5, y:0.7, z:1.0} * t

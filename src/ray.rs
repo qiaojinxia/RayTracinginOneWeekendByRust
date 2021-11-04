@@ -2,6 +2,7 @@ use crate::vec3::Vec3;
 
 pub(crate) type point3  = Vec3;
 
+#[derive(Copy, Clone)]
 pub(crate) struct Ray {
     origin:point3,
     dir:Vec3,

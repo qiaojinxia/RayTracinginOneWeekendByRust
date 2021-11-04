@@ -1,4 +1,6 @@
 use std::ops::{Add, Sub, Mul, Neg, AddAssign, MulAssign, DivAssign, Div};
+use crate::ray::point3;
+
 #[derive(Debug,Copy, Clone)]
 pub(crate) struct Vec3{
     pub(crate) x:f64,
@@ -112,5 +114,9 @@ impl Vec3{
     }
     pub(crate) fn unit_vector(self) -> Self{
         self / self.length()
+    }
+
+    pub(crate) fn dot(u:point3,v:point3) ->f64{
+        u.x *v.x + u.y * v.y+ u.z * v.z
     }
 }
