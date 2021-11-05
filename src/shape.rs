@@ -1,7 +1,7 @@
-use crate::ray::{point3, Ray};
+use crate::ray::{Point3, Ray};
 use crate::vec3::Vec3;
 
-pub(crate) fn hit_sphere(center:point3,radius:f64,ray:Ray) -> bool{
+pub(crate) fn hit_sphere(center: Point3, radius:f64, ray:Ray) -> bool{
     let oc = ray.origin() - center;
     let a = Vec3::dot(ray.direction(),ray.direction());
     let b = 2.0 * Vec3::dot(oc,ray.direction());
