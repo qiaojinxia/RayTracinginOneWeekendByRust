@@ -2,6 +2,7 @@ mod vec3;
 mod draw;
 mod ray;
 mod shape;
+mod hit;
 
 use std::fmt::{Display, Formatter};
 use crate::vec3::Vec3;

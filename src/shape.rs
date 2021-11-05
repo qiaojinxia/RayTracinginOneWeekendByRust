@@ -1,6 +1,21 @@
 use crate::ray::{Point3, Ray};
 use crate::vec3::Vec3;
+use crate::hit::Hit;
 
+struct Sphere {
+    center:Point3,
+    radius:f64,
+}
+
+impl Sphere {
+    fn form(cen:Point3,ray:f64) -> Self{
+        Self{
+            center: cen,
+            radius: ray
+        }
+    }
+
+}
 //圆的公式:(x - C_x)^2 + (y - C_y) ^2 + (z - C_z)^2 = r^2
 //光线在t时刻所看到的点 P(t) = A + tb A是原点 t 是时间 b 是方向向量
 //把P(t)带入圆的方程 写成矩阵形式 (P(t) -C) ⋅ (P(t) -C) = r^2
@@ -11,6 +26,30 @@ use crate::vec3::Vec3;
 // b的系数是2 把b 替换为 h 所以 h = b / 2
 // 所以 √b^2 - 4ac =>   √2^2(h)^2 - 2^2*ac => 2√h^2 - ac 可以和分母 2a 可以约掉 2
 //最后 -h +- sqrt(h^2 - 2ac) / a
+impl Hit for Sphere {
+    fn hit(self, ray: Ray, t_min: f64, t_max: f64, mut rec: crate::hit::hit_recorder) -> bool {
+        let oc = ray.origin() - self.center;
+        let a = ray.direction().length_squared();
+        let half_b =  Vec3::dot(oc,ray.direction());
+        let c = oc.length_squared()- self.radius * self.radius;
+        let discriminant = half_b * half_b -   a  * c;
+        if discriminant < 0.0 {
+            return false;
+        }
+        let root = (- half_b + discriminant.sqrt()) / a;
+        if root < t_min || t_max < root{
+            if root < t_min || t_max < root{
+                return false;
+            }
+        }
+        rec.t = root;
+        rec.p = ray.at(rec.t);
+        rec.normal = (rec.p - self.center) / self.radius;
+        true
+    }
+}
+
+
 pub(crate) fn hit_sphere(center: Point3, radius:f64, ray:Ray) -> f64{
     let oc = ray.origin() - center;
     let a = ray.direction().length_squared();
