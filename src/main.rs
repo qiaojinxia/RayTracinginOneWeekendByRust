@@ -16,13 +16,16 @@ type Color = Vec3;
 
 impl Display for Color{
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f,"{} {} {}\n",(255.999 * self.x) as i32, (255.999 * self.y) as i32, (255.999 *self.z) as i32)
+        write!(f,"{} {} {}\n",(255.999 * self.x) as i32, (255.999 * self.y) as i32, (255.999 * self.z) as i32)
     }
 }
 
 fn ray_color(ray:Ray) -> Color{
-    if hit_sphere(Point3 {x :0.0 ,y : 0.0, z : -1.0}, 0.5, ray) {
-        return Color{x : 1.0, y : 0.0, z : 0.0}
+    let t =  hit_sphere(Point3 {x :0.0 ,y : 0.0, z : -1.0}, 0.5, ray);
+    if t > 0.0 {
+        let mut n = ray.at(t) - Color{ x : 0.0, y : 0.0, z : -1.0};
+        n = n.unit_vector();
+        return  Color{x : n.x + 1.0,y : n.y + 1.0 ,z : n.z + 1.0} * 0.5
     }
     let unit_direction = ray.direction().unit_vector();
     let t = 0.5 * (unit_direction.y + 1.0);
