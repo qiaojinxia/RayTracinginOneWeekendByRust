@@ -1,3 +1,4 @@
 Run1:
 	cargo build
-	./target/debug/RayTracinginOneWeekend >> image.ppm
+	./target/debug/ray_tracingin_one_weekend >> ./image.ppm
+	open  ./image.ppm

@@ -102,7 +102,7 @@ impl Vec3{
     pub(crate) fn length(self) -> f64{
         self.length_squared().sqrt()
     }
-    fn length_squared(self) -> f64{
+    pub(crate) fn length_squared(self) -> f64{
         return self.x * self.x + self.y * self.y + self.z * self.z
     }
     pub(crate) fn cross(u:&Vec3,v:&Vec3) -> Self{
