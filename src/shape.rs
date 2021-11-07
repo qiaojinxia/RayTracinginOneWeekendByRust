@@ -12,11 +12,11 @@ pub(crate) struct Sphere{
 }
 
 impl Sphere {
-    pub(crate) fn form(center:Point3,radius:f64,material:Option<Arc<dyn Materials>>) -> Self{
+    pub(crate) fn form(center:Point3, radius:f64, material: Arc<dyn Materials>) -> Self{
         Self{
             center,
             radius,
-            material
+            material:Some(material)
         }
     }
 }

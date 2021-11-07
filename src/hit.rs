@@ -18,7 +18,7 @@ pub(crate) trait Hittable:Send+ Sync +Debug {
     fn hit(&self,ray:Ray,t_min:f64,t_max:f64,rec:&mut HitRecorder) -> bool;
 }
 
-//计算射线在交点 的 前面还是 后面 射入的
+//计算射线物体的前面还是后面
 impl HitRecorder{
 
     pub(crate) fn new() -> HitRecorder {

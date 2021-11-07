@@ -160,6 +160,6 @@ impl Vec3{
     }
 
     pub(crate) fn reflect(v:Vec3,n:Vec3) -> Vec3{
-        v - Vec3::dot(v,n) * 2 * n
+        v - n * (Vec3::dot(v,n) * 2.0)
     }
 }

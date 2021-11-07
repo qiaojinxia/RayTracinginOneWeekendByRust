@@ -1,3 +1,5 @@
+#![feature(in_band_lifetimes)]
+
 mod vec3;
 mod draw;
 mod ray;
@@ -20,6 +22,8 @@ use crate::hittable_list::HittableList;
 use std::sync::{Arc, mpsc};
 use crate::camera::Camera;
 use crate::common::{rand_f64, clamp, rand_range_f64};
+use std::rc::Rc;
+use crate::material::{Lambertian, Metal};
 
 type Color = Vec3;
 
@@ -47,13 +51,15 @@ fn ray_color(ray:Ray,world:&HittableList,depth:i32) -> Color{
     if depth <= 0 {
         return Color::set(0.0,0.0,0.0);
     }
-    if world.hit(ray,0.001,f64::MAX,rec.borrow_mut()){
-        let scattered  = Ray::new();
-        let attenuation = Color::new();
-        if(rec.material.unwrap().scatter(r,rec,attenuation,scattered.borrow())){
-            return attenuation * ray_color(scattered,world,depth -1);
+    if world.hit(ray, 0.001, f64::MAX, rec.borrow_mut()){
+        let attenuation = rec.material.clone().unwrap().get_color();
+        let ray = rec.material.clone().unwrap().scatter(&ray, rec);
+        return match ray {
+            Some(scattered) => {
+                attenuation * ray_color(scattered, world, depth - 1)
+            }
+            None => { Color::set(0.0, 0.0, 0.0) }
         }
-        return Color::set(0.0,0.0,0.0);
         // let target = rec.p.unwrap() + Vec3::random_in_hemisphere(rec.normal.unwrap());
         // return ray_color(Ray::form(rec.p.unwrap(),target- rec.p.unwrap()),world.borrow(),depth-1) * 0.5;
     }
@@ -69,10 +75,22 @@ fn main() {
     let image_height = (image_width as f64 / aspect_ratio) as i32;
     let samples_per_pixel = 100;
     let max_depth = 50;
+
+    //Materials
+    let m_ground = Arc::new(Lambertian::form(0.8,0.8,0.0));
+    let m_center = Arc::new(Lambertian::form(0.7,0.3,0.3));
+    let m_left= Arc::new(Metal::form(0.8,0.8,0.8,0.3));
+    let m_right= Arc::new(Metal::form(0.8,0.6,0.2,0.3));
+
+
     //World
-    let mut world = HittableList::new();
-    world.add(Arc::new(Sphere::form(Point3::form(0.0,0.0,-1.0),0.5,None)));
-    world.add(Arc::new(Sphere::form(Point3::form(0.0,-100.5,-1.0),100.0,None)));
+    let mut world =HittableList::new();
+    world.add(Arc::new(Sphere::form(Point3::form(0.0,-100.5,-1.0),100.0,m_ground)));
+    world.add(Arc::new(Sphere::form(Point3::form(0.0,0.0,-1.0),0.5,m_center)));
+    world.add(Arc::new(Sphere::form(Point3::form(-1.0,0.0,-1.0),0.5,m_left)));
+    world.add(Arc::new(Sphere::form(Point3::form(1.0,0.0,-1.0),0.5,m_right)));
+
+
     let world_arc = Arc::new(world);
     //Camera
     let camera_arc = Arc::new(Camera::new(Point3::new(),2.0));
