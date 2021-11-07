@@ -1,13 +1,15 @@
 use std::sync::Arc;
 use crate::hit::{Hittable, HitRecorder};
 use crate::ray::Ray;
+
+#[derive(Debug, Clone)]
 pub(crate) struct HittableList{
     pub(crate) objects:Vec<Arc<dyn Hittable>>,
 }
 
 impl HittableList{
     pub(crate) fn new() -> Self{
-        Self{ objects: vec![] }
+        Self{ objects: vec![]}
     }
     pub(crate) fn add(&mut self, obj:Arc<dyn Hittable>){
         self.objects.push(obj);

@@ -1,15 +1,20 @@
 use crate::ray::{Point3, Ray};
 use crate::vec3::Vec3;
+use std::fmt::Debug;
+use std::sync::Arc;
+use crate::material::Materials;
 
-#[derive(Copy, Clone)]
+
+#[derive( Clone)]
 pub(crate) struct HitRecorder {
     pub(crate) p:Option<Point3>,
     pub(crate) normal:Option<Vec3>,
+    pub(crate) material:Option<Arc<dyn Materials>>,
     pub(crate) t:f64,
     front_face:bool,
 }
 
-pub(crate) trait Hittable {
+pub(crate) trait Hittable:Send+ Sync +Debug {
     fn hit(&self,ray:Ray,t_min:f64,t_max:f64,rec:&mut HitRecorder) -> bool;
 }
 
@@ -20,6 +25,7 @@ impl HitRecorder{
         Self{
             p: None,
             normal: None,
+            material: None,
             t: 0.0,
             front_face: false
         }

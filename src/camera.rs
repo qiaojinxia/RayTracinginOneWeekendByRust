@@ -1,6 +1,7 @@
 use crate::ray::{Point3, Ray};
 use crate::vec3::Vec3;
 
+#[derive(Copy, Clone,Debug)]
 pub(crate) struct Camera {
     origin:Point3,
     lower_left_corner:Point3,
@@ -8,7 +9,7 @@ pub(crate) struct Camera {
     vertical:Vec3,
 }
 
-impl Camera {
+impl Camera{
     pub(crate) fn new(origin:Point3, viewport_height:f64) -> Self{
         let aspect_ratio = 16.0 / 9.0;
         let viewport_width = aspect_ratio * viewport_height;

@@ -1,18 +1,29 @@
 use crate::ray::{Point3, Ray};
 use crate::vec3::Vec3;
 use crate::hit::{Hittable, HitRecorder};
+use std::fmt::{Debug, Formatter};
+use std::sync::Arc;
+use crate::material::Materials;
 
 pub(crate) struct Sphere{
     center:Point3,
     radius:f64,
+    pub(crate) material:Option<Arc<dyn Materials>>,
 }
 
 impl Sphere {
-    pub(crate) fn form(center:Point3,radius:f64) -> Self{
+    pub(crate) fn form(center:Point3,radius:f64,material:Option<Arc<dyn Materials>>) -> Self{
         Self{
             center,
-            radius
+            radius,
+            material
         }
+    }
+}
+
+impl Debug for Sphere {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f,"{:?}",self)
     }
 }
 
@@ -37,6 +48,7 @@ impl Hittable for Sphere{
         }
         rec.t = root;
         rec.p = Some(ray.at(rec.t));
+        rec.material = self.material.clone();
         let outward_normal = (rec.p.unwrap() - self.center) / self.radius;
         rec.set_face_normal(ray,outward_normal);
         return true;
@@ -44,10 +56,10 @@ impl Hittable for Sphere{
 }
 
 
-pub(crate) struct Love{
+// pub(crate) struct Love{
+//
+// }
 
-}
-
-impl Hittablefor for Love{
-
-}
+// impl Hittablefor for Love{
+//
+// }

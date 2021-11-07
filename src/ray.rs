@@ -25,6 +25,12 @@ pub(crate) struct Ray {
 }
 
 impl Ray {
+    pub(crate) fn new() -> Self{
+        Ray {
+            origin:Point3::new(),
+            dir:Point3::new(),
+        }
+    }
     pub(crate) fn form(origin: Point3, dir:Vec3) -> Self{
         Ray {
             origin,
