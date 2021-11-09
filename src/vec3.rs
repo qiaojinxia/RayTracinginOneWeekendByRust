@@ -1,5 +1,8 @@
 use std::ops::{Add, Sub, Mul, Neg, AddAssign, MulAssign, DivAssign, Div};
 use crate::ray::Point3;
+use crate::common::{rand_f64, rand_range_f64};
+use rand::random;
+
 
 #[derive(Debug,Copy, Clone)]
 pub(crate) struct Vec3{
@@ -117,5 +120,45 @@ impl Vec3{
     }
     pub(crate) fn dot(u: Point3, v: Point3) ->f64{
         u.x *v.x + u.y * v.y+ u.z * v.z
+    }
+
+
+    pub(crate) fn random() -> Self{
+        return Vec3::form(rand_f64(),rand_f64(),rand_f64())
+    }
+
+    pub(crate) fn random_range(min:f64,max:f64) -> Self{
+        return Vec3::form(rand_range_f64(min,max),rand_range_f64(min,max),rand_range_f64(min,max))
+    }
+
+    pub(crate) fn random_in_unit_sphere() -> Vec3{
+        loop{
+            let p = Vec3::random_range(-1.0,1.0);
+            if p.length_squared() >= 1.0{
+                continue
+            }
+            return p;
+        }
+    }
+
+    pub(crate) fn random_unit_vector() -> Vec3{
+        Self::random_in_unit_sphere().unit_vector()
+    }
+    pub(crate) fn random_in_hemisphere(normal:Vec3) -> Vec3{
+        let in_unit_sphere = Vec3::random_in_unit_sphere();
+        if Vec3::dot(in_unit_sphere,normal) > 0.0{
+            return in_unit_sphere;
+        }else{
+            return -in_unit_sphere;
+        }
+    }
+
+    pub(crate) fn near_zero(self) -> bool{
+        let s = 1e-8;
+        return (self.x).abs() < s && (self.y).abs() < s && (self.z).abs() < s
+    }
+
+    pub(crate) fn reflect(v:Vec3,n:Vec3) -> Vec3{
+        v - n * (Vec3::dot(v,n) * 2.0)
     }
 }

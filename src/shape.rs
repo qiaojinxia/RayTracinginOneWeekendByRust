@@ -1,63 +1,65 @@
 use crate::ray::{Point3, Ray};
 use crate::vec3::Vec3;
-use crate::hit::Hit;
+use crate::hit::{Hittable, HitRecorder};
+use std::fmt::{Debug, Formatter};
+use std::sync::Arc;
+use crate::material::Materials;
 
-struct Sphere {
+pub(crate) struct Sphere{
     center:Point3,
     radius:f64,
+    pub(crate) material:Option<Arc<dyn Materials>>,
 }
 
 impl Sphere {
-    fn form(cen:Point3,ray:f64) -> Self{
+    pub(crate) fn form(center:Point3, radius:f64, material: Arc<dyn Materials>) -> Self{
         Self{
-            center: cen,
-            radius: ray
+            center,
+            radius,
+            material:Some(material)
         }
     }
-
 }
-//圆的公式:(x - C_x)^2 + (y - C_y) ^2 + (z - C_z)^2 = r^2
-//光线在t时刻所看到的点 P(t) = A + tb A是原点 t 是时间 b 是方向向量
-//把P(t)带入圆的方程 写成矩阵形式 (P(t) -C) ⋅ (P(t) -C) = r^2
-// 进一步化简 => (A + tb -C) ⋅ (A + tb -C) => t^2b ⋅ b + 2tb  ⋅ (A - C) + (A - C) ⋅(A - C) - r^2 = 0
-//上面的式子 是个 未知数为t的2次方程 可以用求根公式 计算 b^2 - 4ac > 0
-// 如果有大于零 说明 圆与 射线有2个交点 如果 = 0 说明有一个交点 如果小于0 说明 没交点
-// -b +- sqrt(b^2 - 4ac) / 2a
-// b的系数是2 把b 替换为 h 所以 h = b / 2
-// 所以 √b^2 - 4ac =>   √2^2(h)^2 - 2^2*ac => 2√h^2 - ac 可以和分母 2a 可以约掉 2
-//最后 -h +- sqrt(h^2 - 2ac) / a
-impl Hit for Sphere {
-    fn hit(self, ray: Ray, t_min: f64, t_max: f64, mut rec: crate::hit::hit_recorder) -> bool {
+
+impl Debug for Sphere {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f,"{:?}",self)
+    }
+}
+
+//计算射线是否能击中圆形
+impl Hittable for Sphere{
+    fn hit(&self, ray: Ray, t_min: f64, t_max: f64, rec: &mut HitRecorder) -> bool {
         let oc = ray.origin() - self.center;
         let a = ray.direction().length_squared();
         let half_b =  Vec3::dot(oc,ray.direction());
-        let c = oc.length_squared()- self.radius * self.radius;
-        let discriminant = half_b * half_b -   a  * c;
+        let c = oc.length_squared() - self.radius * self.radius;
+        let discriminant = half_b * half_b -  a  * c;
         if discriminant < 0.0 {
-            return false;
+            return false
         }
-        let root = (- half_b + discriminant.sqrt()) / a;
+        let squared = discriminant.sqrt();
+        let mut root = (- half_b - squared) / a;
         if root < t_min || t_max < root{
+            root = (- half_b + squared) / a;
             if root < t_min || t_max < root{
                 return false;
             }
         }
         rec.t = root;
-        rec.p = ray.at(rec.t);
-        rec.normal = (rec.p - self.center) / self.radius;
-        true
+        rec.p = Some(ray.at(rec.t));
+        rec.material = self.material.clone();
+        let outward_normal = (rec.p.unwrap() - self.center) / self.radius;
+        rec.set_face_normal(ray,outward_normal);
+        return true;
     }
 }
 
 
-pub(crate) fn hit_sphere(center: Point3, radius:f64, ray:Ray) -> f64{
-    let oc = ray.origin() - center;
-    let a = ray.direction().length_squared();
-    let half_b =  Vec3::dot(oc,ray.direction());
-    let c = oc.length_squared()- radius * radius;
-    let discriminant = half_b * half_b -   a  * c;
-    if discriminant < 0.0 {
-        return - 1.0;
-    }
-    return (-half_b - discriminant.sqrt()) / a ;
-}
+// pub(crate) struct Love{
+//
+// }
+
+// impl Hittablefor for Love{
+//
+// }
