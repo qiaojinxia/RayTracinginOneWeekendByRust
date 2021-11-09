@@ -1,7 +1,8 @@
 use std::ops::{Add, Sub, Mul, Neg, AddAssign, MulAssign, DivAssign, Div};
 use crate::ray::Point3;
 use crate::common::{rand_f64, rand_range_f64};
-use rand::random;
+use std::intrinsics::fmaf32;
+use std::cmp::min;
 
 
 #[derive(Debug,Copy, Clone)]
@@ -161,4 +162,13 @@ impl Vec3{
     pub(crate) fn reflect(v:Vec3,n:Vec3) -> Vec3{
         v - n * (Vec3::dot(v,n) * 2.0)
     }
+
+
+    pub(crate) fn refract(uv:Vec3,n:Vec3,etai_over_etat:f64) -> Vec3{
+        let cost_theta = min(Vec3::dot(- uv,n),1.0);
+        let r_out_perp =  (uv + n * cost_theta ) * etai_over_etat;
+        let r_out_parallel =  n * (1.0 - r_out_perp.length_squared()).abs().sqrt();
+        return r_out_perp + r_out_parallel;
+    }
+
 }

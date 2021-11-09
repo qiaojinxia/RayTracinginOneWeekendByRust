@@ -2,9 +2,6 @@ use crate::ray::Ray;
 use crate::hit::HitRecorder;
 use crate::Color;
 use crate::vec3::Vec3;
-use std::borrow::Borrow;
-use std::rc::Rc;
-use std::sync::Arc;
 
 pub(crate) trait Materials:Send + Sync{
     fn scatter(&self,ray_in:&Ray,rec:HitRecorder) -> Option<Ray>;
@@ -65,5 +62,27 @@ impl Materials for Metal{
 
     fn get_color(&self) -> Color {
         self.albedo
+    }
+}
+
+struct Dielectric{
+    IR:f64,
+}
+
+impl Materials for Dielectric{
+    fn scatter(&self, ray_in: &Ray, rec: HitRecorder) -> Option<Ray> {
+        let mut refraction_ratio;
+        if rec.front_face == true  {
+            refraction_ratio = 1.0 / self.IR;
+        }else{
+            refraction_ratio = self.IR
+        }
+        let unit_direction = ray_in.direction().unit_vector();
+        let refracted = Vec3::refract(unit_direction, rec.normal.unwrap(), refraction_ratio);
+        Some(Ray::form(rec.p.unwrap(),refracted));
+    }
+
+    fn get_color(&self) -> Color {
+        Color::form(1.0,1.0,1.0)
     }
 }
