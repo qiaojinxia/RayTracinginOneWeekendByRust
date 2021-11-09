@@ -118,7 +118,6 @@ impl Vec3{
     pub(crate) fn unit_vector(self) -> Self{
         self / self.length()
     }
-
     pub(crate) fn dot(u: Point3, v: Point3) ->f64{
         u.x *v.x + u.y * v.y+ u.z * v.z
     }
