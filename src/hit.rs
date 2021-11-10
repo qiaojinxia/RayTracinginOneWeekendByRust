@@ -11,7 +11,7 @@ pub(crate) struct HitRecorder {
     pub(crate) normal:Option<Vec3>,
     pub(crate) material:Option<Arc<dyn Materials>>,
     pub(crate) t:f64,
-    front_face:bool,
+    pub(crate) front_face:bool,
 }
 
 pub(crate) trait Hittable:Send+ Sync +Debug {

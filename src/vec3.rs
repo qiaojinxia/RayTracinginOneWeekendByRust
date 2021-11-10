@@ -1,7 +1,6 @@
 use std::ops::{Add, Sub, Mul, Neg, AddAssign, MulAssign, DivAssign, Div};
 use crate::ray::Point3;
-use crate::common::{rand_f64, rand_range_f64};
-use rand::random;
+use crate::common::{rand_range_f64};
 
 
 #[derive(Debug,Copy, Clone)]
@@ -123,9 +122,9 @@ impl Vec3{
     }
 
 
-    pub(crate) fn random() -> Self{
-        return Vec3::form(rand_f64(),rand_f64(),rand_f64())
-    }
+    // pub(crate) fn random() -> Self{
+    //     return Vec3::form(rand_f64(),rand_f64(),rand_f64())
+    // }
 
     pub(crate) fn random_range(min:f64,max:f64) -> Self{
         return Vec3::form(rand_range_f64(min,max),rand_range_f64(min,max),rand_range_f64(min,max))
@@ -160,5 +159,12 @@ impl Vec3{
 
     pub(crate) fn reflect(v:Vec3,n:Vec3) -> Vec3{
         v - n * (Vec3::dot(v,n) * 2.0)
+    }
+
+    pub(crate) fn refract(uv:Vec3,n:Vec3,etai_over_etat:f64) -> Vec3{
+        let cos_theta = Vec3::dot(-uv,n);
+        let cos_theta2 = 1.0 - etai_over_etat * etai_over_etat * (1.0 - cos_theta * cos_theta);
+        let t = uv * etai_over_etat  + n *(etai_over_etat * cos_theta - cos_theta2.abs().sqrt());
+        return t ;
     }
 }

@@ -12,7 +12,7 @@ mod material;
 
 use std::fmt::{Display, Formatter};
 use crate::vec3::Vec3;
-use std::{io, thread};
+use std::{ thread};
 use crate::draw::write_color;
 use std::borrow::{BorrowMut, Borrow};
 use crate::ray::{Point3, Ray};
@@ -21,9 +21,8 @@ use crate::hit::{HitRecorder, Hittable};
 use crate::hittable_list::HittableList;
 use std::sync::{Arc, mpsc};
 use crate::camera::Camera;
-use crate::common::{rand_f64, clamp, rand_range_f64};
-use std::rc::Rc;
-use crate::material::{Lambertian, Metal};
+use crate::common::{rand_f64, clamp};
+use crate::material::{Lambertian, Metal, Dielectric};
 
 type Color = Vec3;
 
@@ -74,13 +73,15 @@ fn main() {
     let image_width = 400;
     let image_height = (image_width as f64 / aspect_ratio) as i32;
     let samples_per_pixel = 100;
-    let max_depth = 50;
+    let max_depth = 100;
 
     //Materials
     let m_ground = Arc::new(Lambertian::form(0.8,0.8,0.0));
-    let m_center = Arc::new(Lambertian::form(0.7,0.3,0.3));
-    let m_left= Arc::new(Metal::form(0.8,0.8,0.8,0.3));
-    let m_right= Arc::new(Metal::form(0.8,0.6,0.2,0.3));
+    // let m_center = Arc::new(Lambertian::form(0.7,0.3,0.3));
+    // let m_left= Arc::new(Metal::form(0.8,0.8,0.8,0.3));
+    let m_center = Arc::new(Dielectric::form(1.5));
+    let m_left= Arc::new(Dielectric::form(1.5));
+    let m_right= Arc::new(Metal::form(0.8,0.6,0.2,1.0));
 
 
     //World
