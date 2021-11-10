@@ -65,21 +65,38 @@ impl Materials for Metal{
     }
 }
 
-struct Dielectric{
-    IR:f64,
+pub(crate) struct Dielectric{
+    ir:f64
 }
+
+impl Dielectric{
+    pub(crate) fn form(ir:f64) -> Self{
+        Self{
+            ir
+        }
+    }
+}
+
 
 impl Materials for Dielectric{
     fn scatter(&self, ray_in: &Ray, rec: HitRecorder) -> Option<Ray> {
-        let mut refraction_ratio;
-        if rec.front_face == true  {
-            refraction_ratio = 1.0 / self.IR;
-        }else{
-            refraction_ratio = self.IR
-        }
+       let mut refraction_ratio = self.ir;
+       if rec.front_face {
+           refraction_ratio = 1.0 / self.ir
+       }
         let unit_direction = ray_in.direction().unit_vector();
-        let refracted = Vec3::refract(unit_direction, rec.normal.unwrap(), refraction_ratio);
-        Some(Ray::form(rec.p.unwrap(),refracted));
+        let cos_theta = f64::min(Vec3::dot(-unit_direction,rec.normal.unwrap()),1.0);
+        let sin_theta = 1.0 - (cos_theta * cos_theta);
+        let cannot_refract = refraction_ratio * sin_theta > 1.0;
+        let direction;
+        if cannot_refract{
+            direction = Vec3::reflect(unit_direction, rec.normal.unwrap());
+
+        }else{
+             direction = Vec3::refract(unit_direction,
+                                         rec.normal.unwrap(),refraction_ratio);
+        }
+        Some(Ray::form(rec.p.unwrap(),direction))
     }
 
     fn get_color(&self) -> Color {

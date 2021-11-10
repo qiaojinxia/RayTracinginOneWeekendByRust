@@ -17,3 +17,4 @@ pub(crate) fn rand_range_f64(min:f64,max:f64) -> f64{
     let i = rng.gen_range(min,max);
     i
 }
+
