@@ -1,5 +1,3 @@
-#![feature(in_band_lifetimes)]
-
 mod vec3;
 mod draw;
 mod ray;
@@ -73,28 +71,32 @@ fn main() {
     let image_width = 400;
     let image_height = (image_width as f64 / aspect_ratio) as i32;
     let samples_per_pixel = 100;
-    let max_depth = 100;
+    let max_depth = 1000;
 
     //Materials
-    let m_ground = Arc::new(Lambertian::form(0.8,0.8,0.0));
+    let m_ground = Arc::new(Lambertian::form(176.0/255.0,196.0/255.0,222.0/255.0,));
     // let m_center = Arc::new(Lambertian::form(0.7,0.3,0.3));
     // let m_left= Arc::new(Metal::form(0.8,0.8,0.8,0.3));
     let m_center = Arc::new(Dielectric::form(1.5));
     let m_left= Arc::new(Dielectric::form(1.5));
+    let m_left1= Arc::new(Dielectric::form(1.5));
     let m_right= Arc::new(Metal::form(0.8,0.6,0.2,1.0));
 
 
     //World
-    let mut world =HittableList::new();
+    let mut world = HittableList::new();
     world.add(Arc::new(Sphere::form(Point3::form(0.0,-100.5,-1.0),100.0,m_ground)));
     world.add(Arc::new(Sphere::form(Point3::form(0.0,0.0,-1.0),0.5,m_center)));
     world.add(Arc::new(Sphere::form(Point3::form(-1.0,0.0,-1.0),0.5,m_left)));
+    world.add(Arc::new(Sphere::form(Point3::form(-1.0,0.0,-1.0),-0.45,m_left1)));
     world.add(Arc::new(Sphere::form(Point3::form(1.0,0.0,-1.0),0.5,m_right)));
 
 
     let world_arc = Arc::new(world);
     //Camera
-    let camera_arc = Arc::new(Camera::new(Point3::new(),2.0));
+    let camera_arc = Arc::new(Camera::new(
+                                          Point3::form(3.0,3.0,3.0),
+                                          Vec3::form(0.0,0.0,-1.0),Vec3::form(0.0,1.0,0.0),20.0,aspect_ratio));
     let count = 10; //图形渲染线程数
     let (tx, rx) = mpsc::channel();
     for thread_n in  0 .. count{

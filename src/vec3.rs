@@ -1,6 +1,6 @@
 use std::ops::{Add, Sub, Mul, Neg, AddAssign, MulAssign, DivAssign, Div};
 use crate::ray::Point3;
-use crate::common::{rand_range_f64};
+use crate::common::{rand_range_f64, rand_f64};
 
 
 #[derive(Debug,Copy, Clone)]
@@ -107,9 +107,9 @@ impl Vec3{
     pub(crate) fn length_squared(self) -> f64{
         return self.x * self.x + self.y * self.y + self.z * self.z
     }
-    pub(crate) fn cross(u:&Vec3,v:&Vec3) -> Self{
+    pub(crate) fn cross(u:Vec3,v:Vec3) -> Self{
         Vec3{
-            x: u.x * v.z - u.z * v.y,
+            x: u.y * v.z - u.z * v.y,
             y: u.z * v.x - u.x * v.z,
             z: u.x * v.y - u.y * v.x,
         }
@@ -121,10 +121,9 @@ impl Vec3{
         u.x *v.x + u.y * v.y+ u.z * v.z
     }
 
-
-    // pub(crate) fn random() -> Self{
-    //     return Vec3::form(rand_f64(),rand_f64(),rand_f64())
-    // }
+    pub(crate) fn random() -> Self{
+        return Vec3::form(rand_f64(),rand_f64(),rand_f64())
+    }
 
     pub(crate) fn random_range(min:f64,max:f64) -> Self{
         return Vec3::form(rand_range_f64(min,max),rand_range_f64(min,max),rand_range_f64(min,max))
@@ -145,10 +144,10 @@ impl Vec3{
     }
     pub(crate) fn random_in_hemisphere(normal:Vec3) -> Vec3{
         let in_unit_sphere = Vec3::random_in_unit_sphere();
-        if Vec3::dot(in_unit_sphere,normal) > 0.0{
-            return in_unit_sphere;
-        }else{
-            return -in_unit_sphere;
+        return if Vec3::dot(in_unit_sphere, normal) > 0.0 {
+            in_unit_sphere
+        } else {
+            -in_unit_sphere
         }
     }
 
@@ -161,10 +160,10 @@ impl Vec3{
         v - n * (Vec3::dot(v,n) * 2.0)
     }
 
-    pub(crate) fn refract(uv:Vec3,n:Vec3,etai_over_etat:f64) -> Vec3{
+    pub(crate) fn refract(uv:Vec3, n:Vec3, eta:f64) -> Vec3{
         let cos_theta = Vec3::dot(-uv,n);
-        let cos_theta2 = 1.0 - etai_over_etat * etai_over_etat * (1.0 - cos_theta * cos_theta);
-        let t = uv * etai_over_etat  + n *(etai_over_etat * cos_theta - cos_theta2.abs().sqrt());
+        let cos_theta2 = 1.0 - eta * eta * (1.0 - cos_theta * cos_theta);
+        let t = uv * eta + n *(eta * cos_theta - cos_theta2.abs().sqrt());
         return t ;
     }
 }

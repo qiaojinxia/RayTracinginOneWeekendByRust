@@ -2,6 +2,8 @@ use crate::ray::Ray;
 use crate::hit::HitRecorder;
 use crate::Color;
 use crate::vec3::Vec3;
+use crate::common::rand_f64;
+
 
 pub(crate) trait Materials:Send + Sync{
     fn scatter(&self,ray_in:&Ray,rec:HitRecorder) -> Option<Ray>;
@@ -77,7 +79,6 @@ impl Dielectric{
     }
 }
 
-
 impl Materials for Dielectric{
     fn scatter(&self, ray_in: &Ray, rec: HitRecorder) -> Option<Ray> {
        let mut refraction_ratio = self.ir;
@@ -86,10 +87,12 @@ impl Materials for Dielectric{
        }
         let unit_direction = ray_in.direction().unit_vector();
         let cos_theta = f64::min(Vec3::dot(-unit_direction,rec.normal.unwrap()),1.0);
+        //根据折射率的公式:𝜂/𝜂' * sin𝜃 = sin'𝜃 从折射率搞得地方 折射到折射率低的地方 1.5 / 1.0 * sin𝜃 => 1.5 * sin𝜃 = sin'𝜃 等式两边的值域 不相同 等式不成立
+        //所以 不能用折射公式 这个时候我们要使用 反射公式
         let sin_theta = 1.0 - (cos_theta * cos_theta);
         let cannot_refract = refraction_ratio * sin_theta > 1.0;
         let direction;
-        if cannot_refract{
+        if cannot_refract || Self::reflectance(cos_theta, refraction_ratio) > rand_f64() {
             direction = Vec3::reflect(unit_direction, rec.normal.unwrap());
 
         }else{
@@ -101,5 +104,13 @@ impl Materials for Dielectric{
 
     fn get_color(&self) -> Color {
         Color::form(1.0,1.0,1.0)
+    }
+}
+
+impl Dielectric{
+    pub(crate) fn reflectance(cosine:f64,ref_idx:f64) -> f64{
+        let mut r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
+        r0 = r0 * r0;
+        return r0 + (1.0 - r0) * (1.0 - cosine).powi(5);
     }
 }

@@ -9,7 +9,6 @@ pub(crate) fn write_color(std: &mut File, color:Color,samples_per_pixel:i32){
 
     let scale = 1.0 / samples_per_pixel as f64 ;
 
-
     r =(scale * r).sqrt();
     g =(scale * g).sqrt();
     b =(scale * b).sqrt();
