@@ -14,7 +14,7 @@ use std::{ thread};
 use crate::draw::write_color;
 use std::borrow::{BorrowMut, Borrow};
 use crate::ray::{Point3, Ray};
-use crate::shape::{ Sphere};
+use crate::shape::{Sphere, Triangle};
 use crate::hit::{HitRecorder, Hittable};
 use crate::hittable_list::HittableList;
 use std::sync::{Arc, mpsc};
@@ -33,6 +33,7 @@ impl Display for Color{
                (256.0 * clamp(self.z, 0.0, 0.999)) as i32)
     }
 }
+
 impl Color{
     pub(crate) fn set(r:f64,g:f64,b:f64) -> Self{
         Vec3{
@@ -48,7 +49,7 @@ fn ray_color(ray:Ray,world:&HittableList,depth:i32) -> Color{
     if depth <= 0 {
         return Color::set(0.0,0.0,0.0);
     }
-    if world.hit(ray, 0.001, f64::MAX, rec.borrow_mut()){
+    if world.hit(ray, 0.000001, f64::MAX, rec.borrow_mut()){
         let attenuation = rec.material.clone().unwrap().get_color();
         let ray = rec.material.clone().unwrap().scatter(&ray, rec);
         return match ray {
@@ -71,7 +72,7 @@ fn main() {
     let image_width = 400;
     let image_height = (image_width as f64 / aspect_ratio) as i32;
     let samples_per_pixel = 100;
-    let max_depth = 1000;
+    let max_depth = 100;
 
     //Materials
     let m_ground = Arc::new(Lambertian::form(176.0/255.0,196.0/255.0,222.0/255.0,));
@@ -81,24 +82,24 @@ fn main() {
     let m_left= Arc::new(Dielectric::form(1.5));
     let m_left1= Arc::new(Dielectric::form(1.5));
     let m_right= Arc::new(Metal::form(0.8,0.6,0.2,1.0));
-
+    let x= Arc::new(Metal::form(0.1,0.6,0.2,1.0));
 
     //World
     let mut world = HittableList::new();
     world.add(Arc::new(Sphere::form(Point3::form(0.0,-100.5,-1.0),100.0,m_ground)));
-    world.add(Arc::new(Sphere::form(Point3::form(0.0,0.0,-1.0),0.5,m_center)));
-    world.add(Arc::new(Sphere::form(Point3::form(-1.0,0.0,-1.0),0.5,m_left)));
-    world.add(Arc::new(Sphere::form(Point3::form(-1.0,0.0,-1.0),-0.45,m_left1)));
-    world.add(Arc::new(Sphere::form(Point3::form(1.0,0.0,-1.0),0.5,m_right)));
-
+    // world.add(Arc::new(Sphere::form(Point3::form(0.0,0.0,-1.0),0.5,m_center)));
+    // world.add(Arc::new(Sphere::form(Point3::form(-1.0,0.0,-1.0),0.5,m_left)));
+    // world.add(Arc::new(Sphere::form(Point3::form(-1.0,0.0,-1.0),-0.45,m_left1)));
+    // world.add(Arc::new(Sphere::form(Point3::form(1.0,0.0,-1.0),0.5,m_right)));
+    world.add(Arc::new(Triangle::form_x(Point3::form(0.0,1.0,-1.0),1.0,1.0,x)));
 
     let world_arc = Arc::new(world);
     //Camera
-    let lf = Point3::form(3.0,3.0,3.0);
+    let lf = Point3::form(0.0,0.0,2.0);
     let la =Vec3::form(0.0,0.0,-1.0);
     let dist_to_focus = (lf-la).length();
     let camera_arc = Arc::new(Camera::new(
-        lf, la, Vec3::form(0.0,1.0,0.0),20.0,aspect_ratio,2.0,dist_to_focus));
+        lf, la, Vec3::form(0.0,1.0,0.0),90.0,aspect_ratio,2.0,dist_to_focus));
     let count = 10; //图形渲染线程数
     let (tx, rx) = mpsc::channel();
     for thread_n in  0 .. count{

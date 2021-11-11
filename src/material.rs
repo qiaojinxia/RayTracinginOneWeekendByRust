@@ -56,7 +56,8 @@ impl Materials for Metal{
     fn scatter(&self, ray_in: &Ray, rec: HitRecorder) -> Option<Ray> {
         let reflected = Vec3::reflect(ray_in.direction().unit_vector(),rec.normal.unwrap());
         let scattered = Ray::form(rec.p.unwrap(), reflected + Vec3::random_in_unit_sphere() * self.fuzz  );
-        if Vec3::dot(scattered.direction(),rec.normal.unwrap()) > 0.0{
+        let x = Vec3::dot(scattered.direction(),rec.normal.unwrap());
+        if  x > 0.0{
            return Some(scattered);
         }
         None
@@ -90,7 +91,7 @@ impl Materials for Dielectric{
         //根据折射率的公式:𝜂/𝜂' * sin𝜃 = sin'𝜃 从折射率搞得地方 折射到折射率低的地方 1.5 / 1.0 * sin𝜃 => 1.5 * sin𝜃 = sin'𝜃 等式两边的值域 不相同 等式不成立
         //所以 不能用折射公式 这个时候我们要使用 反射公式
         let sin_theta = 1.0 - (cos_theta * cos_theta);
-        let cannot_refract = refraction_ratio * sin_theta > 1.0;
+            let cannot_refract = refraction_ratio * sin_theta > 1.0;
         let direction;
         if cannot_refract || Self::reflectance(cos_theta, refraction_ratio) > rand_f64() {
             direction = Vec3::reflect(unit_direction, rec.normal.unwrap());
