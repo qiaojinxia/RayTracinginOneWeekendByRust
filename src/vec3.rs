@@ -17,10 +17,24 @@ impl Add for Vec3 {
     }
 }
 
+impl Add<f64> for Vec3 {
+    type Output = Vec3;
+    fn add(self, shr: f64) -> Self::Output {
+        Self { x: self.x + shr, y: self.y + shr , z: self.z + shr }
+    }
+}
+
 impl Sub for Vec3 {
     type Output = Vec3;
     fn sub(self, other: Vec3) -> Self::Output {
         Self {x: self.x - other.x, y: self.y - other.y, z: self.z - other.z}
+    }
+}
+
+impl Sub<f64> for Vec3 {
+    type Output = Vec3;
+    fn sub(self, shr: f64) -> Self::Output {
+        Self { x: self.x - shr, y: self.y - shr , z: self.z - shr }
     }
 }
 
@@ -166,4 +180,13 @@ impl Vec3{
         let t = uv * eta + n *(eta * cos_theta - cos_theta2.abs().sqrt());
         return t ;
     }
+
+    pub(crate) fn random_in_unit_disk() -> Vec3{
+        loop {
+            let p = Vec3::form(rand_range_f64(-1.0,1.0),rand_range_f64(-1.0,1.0),0.0);
+            if p.length_squared() >= 1.0{continue}
+            return p;
+        }
+    }
+
 }

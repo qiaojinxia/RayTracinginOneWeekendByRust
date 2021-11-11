@@ -94,9 +94,11 @@ fn main() {
 
     let world_arc = Arc::new(world);
     //Camera
+    let lf = Point3::form(3.0,3.0,3.0);
+    let la =Vec3::form(0.0,0.0,-1.0);
+    let dist_to_focus = (lf-la).length();
     let camera_arc = Arc::new(Camera::new(
-                                          Point3::form(3.0,3.0,3.0),
-                                          Vec3::form(0.0,0.0,-1.0),Vec3::form(0.0,1.0,0.0),20.0,aspect_ratio));
+        lf, la, Vec3::form(0.0,1.0,0.0),20.0,aspect_ratio,2.0,dist_to_focus));
     let count = 10; //图形渲染线程数
     let (tx, rx) = mpsc::channel();
     for thread_n in  0 .. count{
