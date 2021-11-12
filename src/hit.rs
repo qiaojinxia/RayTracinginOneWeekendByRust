@@ -36,7 +36,7 @@ impl HitRecorder{
             self.normal = Some(outward_normal);
             self.front_face = true;
         }else{
-            self.normal = Some(-outward_normal);
+            self.normal = Some(- outward_normal);
             self.front_face = false;
         }
     }

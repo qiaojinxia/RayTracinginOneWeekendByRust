@@ -94,7 +94,7 @@ impl Debug for Triangle {
     }
 }
 
-//克莱姆法则
+//三角形的重心公式 然后使用 克莱姆法则求解
 impl Hittable for Triangle{
     fn hit(&self, ray: Ray, t_min: f64, t_max: f64, rec: &mut HitRecorder) -> bool {
         let e1 = self.p2 - self.p1;
@@ -124,7 +124,9 @@ impl Hittable for Triangle{
         }
         rec.material = self.material.clone();
         rec.t = t;
-        rec.normal = Some(Vec3::cross(e1,e2).unit_vector());
+        //计算 三角行的 法线 2条边求叉积
+        let mut outward_normal = Vec3::cross(e1,e2).unit_vector();
+        rec.set_face_normal(ray,outward_normal);
         rec.p = Some(ray.at(rec.t));
         rec.front_face = true;
         true

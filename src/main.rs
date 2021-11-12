@@ -7,6 +7,7 @@ mod hittable_list;
 mod camera;
 mod common;
 mod material;
+mod stl_reader;
 
 use std::fmt::{Display, Formatter};
 use crate::vec3::Vec3;
@@ -19,8 +20,9 @@ use crate::hit::{HitRecorder, Hittable};
 use crate::hittable_list::HittableList;
 use std::sync::{Arc, mpsc};
 use crate::camera::Camera;
-use crate::common::{rand_f64, clamp};
+use crate::common::{rand_f64, clamp, parse_little_endian};
 use crate::material::{Lambertian, Metal, Dielectric};
+use crate::stl_reader::StlReader;
 
 type Color = Vec3;
 
@@ -67,6 +69,13 @@ fn ray_color(ray:Ray,world:&HittableList,depth:i32) -> Color{
 }
 
 fn main() {
+    let mut stl = StlReader::newStlReader("/Users/cboy/CLionProjects/ray_tracingin_one_weekend/cat.stl".to_string());
+    let angle_num = stl.read_angle_num();
+
+    let val =parse_little_endian(vec![0x78,0x56,0x34,0x12]);
+    let m:i32 = 0x12 << 8 ;
+
+    println!("{:?}",m);
     //Image
     let aspect_ratio = 16.0 / 9.0;
     let image_width = 400;
