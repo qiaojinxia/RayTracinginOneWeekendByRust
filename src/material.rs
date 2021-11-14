@@ -51,6 +51,16 @@ impl Metal{
             albedo: Color::form(r,g,b),
         }
     }
+
+    pub(crate) fn form_c(color:Color, mut f:f64) -> Metal{
+        if f > 1.0{
+            f = 1.0
+        }
+        Self{
+            fuzz:f,
+            albedo: color,
+        }
+    }
 }
 impl Materials for Metal{
     fn scatter(&self, ray_in: &Ray, rec: HitRecorder) -> Option<Ray> {

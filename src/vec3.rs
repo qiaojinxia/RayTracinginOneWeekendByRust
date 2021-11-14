@@ -10,11 +10,13 @@ pub(crate) struct Vec3{
     pub(crate) z:f64,
 }
 
+
 impl Add for Vec3 {
     type Output = Vec3;
     fn add(self, other: Vec3) -> Self::Output {
         Self { x: self.x + other.x, y: self.y + other.y , z: self.z + other.z }
     }
+
 }
 
 impl Add<f64> for Vec3 {
@@ -132,6 +134,26 @@ impl Vec3{
         self / self.length()
     }
 
+    pub(crate) fn get_field(self, index:i32) -> f64{
+       if index == 0 {
+           return self.x;
+       }else if index == 1{
+           return self.y;
+       }else if index == 2{
+           return self.z;
+       }
+        panic!("错误索引!")
+    }
+
+    pub(crate) fn set_i_field(&mut self,index:i32,val:f64){
+        if index == 0 {
+            self.x = val ;
+        }else if index == 1{
+            self.y = val ;
+        }else if index == 2{
+            self.z = val ;
+        }
+    }
 
     pub(crate) fn dot(u: Point3, v: Point3) ->f64{
         u.x *v.x + u.y * v.y+ u.z * v.z
@@ -191,4 +213,35 @@ impl Vec3{
         }
     }
 
+    pub(crate) fn min(v1:Vec3,v2:Vec3) -> Vec3{
+        let mut tmp = Vec3::new();
+        tmp.x = f64::min(v1.x,v2.x);
+        tmp.y = f64::min(v1.y,v2.y);
+        tmp.z = f64::min(v1.z,v2.z);
+        tmp
+    }
+
+
+    pub(crate) fn max(v1:Vec3,v2:Vec3) -> Vec3{
+        let mut tmp = Vec3::new();
+        tmp.x = f64::max(v1.x,v2.x);
+        tmp.y = f64::max(v1.y,v2.y);
+        tmp.z = f64::max(v1.z,v2.z);
+        tmp
+
+    }
+
+    pub(crate) fn rotate_x(v1:Vec3,degree:f64) -> Self{
+        let r1 = Vec3::form(1.0,0.0,0.0);
+        let r2 = Vec3::form(0.0,degree.cos(),-degree.sin());
+        let r3 = Vec3::form(0.0,degree.sin(),degree.cos());
+        let x = Vec3::dot(r1 ,v1);
+        let y = Vec3::dot(r2 ,v1);
+        let z = Vec3::dot(r3 ,v1);
+        Self{
+            x,
+            y,
+            z
+        }
+    }
 }

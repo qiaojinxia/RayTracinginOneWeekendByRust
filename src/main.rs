@@ -8,6 +8,8 @@ mod camera;
 mod common;
 mod material;
 mod stl_reader;
+mod bvh;
+mod sort;
 
 use std::fmt::{Display, Formatter};
 use crate::vec3::Vec3;
@@ -20,12 +22,55 @@ use crate::hit::{HitRecorder, Hittable};
 use crate::hittable_list::HittableList;
 use std::sync::{Arc, mpsc};
 use crate::camera::Camera;
-use crate::common::{rand_f64, clamp, parse_little_endian};
-use crate::material::{Lambertian, Metal, Dielectric};
+use crate::common::{rand_f64, clamp, rand_range_f64};
+use crate::material::{Lambertian, Metal, Dielectric, Materials};
 use crate::stl_reader::StlReader;
+use crate::bvh::BvhNode;
 
 type Color = Vec3;
 
+pub(crate) fn random_scene() -> Vec<Arc<dyn Hittable>> {
+    let mut world:Vec<Arc<dyn Hittable>> = vec![];
+    let ground_material = Arc::new(Lambertian::form(0.5,0.5,0.5));
+    world.push(Arc::new(Sphere::form(Point3::set(0.0,-1000.0,0.0),1000.0,ground_material)));
+
+    for i in -11 .. 11{
+        for j in -11 .. 11{
+            let a = i as f64;
+            let b = j as f64;
+            let choose_mat = rand_f64();
+            let center = Point3::form(a + 0.9 * rand_f64(),0.2,b + 0.9 * rand_f64());
+            if (center - Point3::form(4.0,0.2,0.0)).length() > 0.9{
+                let mut sphere_material:Arc<dyn Materials>;
+                if choose_mat < 0.8{
+                    let albedo = Color::random() * Color::random();
+                    sphere_material = Arc::new(Lambertian::form(albedo.x,albedo.y,albedo.z));
+                    world.push(Arc::from(Sphere::form(center, 0.2, sphere_material)));
+                }else if choose_mat < 0.95{
+                    let albedo = Color::random_range(0.5, 1.0);
+                    let fuzz = rand_range_f64(0.0,0.5);
+                    sphere_material = Arc::new(Metal::form_c(albedo,fuzz));
+                    world.push(Arc::new(Sphere::form(center,0.2,sphere_material)));
+                }else{
+                    let sphere_material = Arc::new(Dielectric::form(1.5));
+                    world.push(Arc::new(Sphere::form(center,0.2,sphere_material)));
+                }
+            }
+        }
+    }
+    let material1 = Arc::new(Dielectric::form(  1.5));
+    world.push(Arc::new(Sphere::form(Point3::form(0.0,1.0,0.0),1.0,material1)));
+
+    let material2 = Arc::new(Lambertian::form(  0.4, 0.2, 0.1));
+    world.push(Arc::new(Sphere::form(Point3::form(-4.0,1.0,0.0),1.0,material2)));
+
+
+    let material3 = Arc::new(Metal::form(  0.7, 0.6, 0.5, 0.0));
+    world.push(Arc::new(Sphere::form(Point3::form(4.0,1.0,0.0),1.0,material3)));
+
+
+    world
+}
 
 impl Display for Color{
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -69,13 +114,6 @@ fn ray_color(ray:Ray,world:&HittableList,depth:i32) -> Color{
 }
 
 fn main() {
-    let mut stl = StlReader::newStlReader("/Users/cboy/CLionProjects/ray_tracingin_one_weekend/cat.stl".to_string());
-    let angle_num = stl.read_angle_num();
-
-    let val =parse_little_endian(vec![0x78,0x56,0x34,0x12]);
-    let m:i32 = 0x12 << 8 ;
-
-    println!("{:?}",m);
     //Image
     let aspect_ratio = 16.0 / 9.0;
     let image_width = 400;
@@ -83,32 +121,69 @@ fn main() {
     let samples_per_pixel = 100;
     let max_depth = 100;
 
-    //Materials
-    let m_ground = Arc::new(Lambertian::form(176.0/255.0,196.0/255.0,222.0/255.0,));
-    // let m_center = Arc::new(Lambertian::form(0.7,0.3,0.3));
-    // let m_left= Arc::new(Metal::form(0.8,0.8,0.8,0.3));
-    let m_center = Arc::new(Dielectric::form(1.5));
-    let m_left= Arc::new(Dielectric::form(1.5));
-    let m_left1= Arc::new(Dielectric::form(1.5));
-    let m_right= Arc::new(Metal::form(0.8,0.6,0.2,1.0));
-    let x= Arc::new(Metal::form(0.1,0.6,0.2,1.0));
 
+
+    // //Materials
+    let m_ground = Arc::new(Lambertian::form(176.0/255.0,196.0/255.0,222.0/255.0,));
+    // // let m_center = Arc::new(Lambertian::form(0.7,0.3,0.3));
+    // // let m_left= Arc::new(Metal::form(0.8,0.8,0.8,0.3));
+    // let m_center = Arc::new(Dielectric::form(1.5));
+    // let m_left= Arc::new(Dielectric::form(1.5));
+    let m_left1= Arc::new(Dielectric::form(0.8));
+    // let m_right= Arc::new(Metal::form(0.8,0.6,0.2,1.0));
+    // let x= Arc::new(Metal::form(0.1,0.6,0.2,1.0));
+    random_scene();
+    let mut objs:Vec<Arc<dyn Hittable>> = vec![];
     //World
     let mut world = HittableList::new();
     world.add(Arc::new(Sphere::form(Point3::form(0.0,-100.5,-1.0),100.0,m_ground)));
     // world.add(Arc::new(Sphere::form(Point3::form(0.0,0.0,-1.0),0.5,m_center)));
     // world.add(Arc::new(Sphere::form(Point3::form(-1.0,0.0,-1.0),0.5,m_left)));
-    // world.add(Arc::new(Sphere::form(Point3::form(-1.0,0.0,-1.0),-0.45,m_left1)));
-    // world.add(Arc::new(Sphere::form(Point3::form(1.0,0.0,-1.0),0.5,m_right)));
-    world.add(Arc::new(Triangle::form_x(Point3::form(0.0,1.0,-1.0),1.0,1.0,x)));
+    objs.push(Arc::new(Sphere::form(Point3::form(5.0,0.0,5.0),-10.0,m_left1.clone())));
+    // objs.push(Arc::new(Sphere::form(Point3::form(1.0,0.0,-1.0),10.0,m_right.clone())));
+    // world.add(Arc::new(Triangle::form_x(Point3::form(0.0,1.0,-1.0),1.0,1.0,x)));
 
+    //读取stl模型三角面
+    let mut stl = StlReader::newStlReader("cat.stl".to_string());
+    let angle_num = stl.read_angle_num();
+    println!("模型三角形数量:{}",angle_num);
+    let x= Arc::new(Metal::form(0.1,0.6,0.2,1.0));
+    for i in 0..angle_num{
+        let n_x = stl.read_angle_point();
+        let n_y = stl.read_angle_point();
+        let n_z = stl.read_angle_point();
+
+        let t1_x = stl.read_angle_point();
+        let t1_y = stl.read_angle_point();
+        let t1_z = stl.read_angle_point();
+        let t2_x = stl.read_angle_point();
+        let t2_y = stl.read_angle_point();
+        let t2_z = stl.read_angle_point();
+
+        let t3_x = stl.read_angle_point();
+        let t3_y = stl.read_angle_point();
+        let t3_z = stl.read_angle_point();
+        let mut p1 = Point3::form(t1_x,t1_y,t1_z) ;
+        let mut p2 = Point3::form(t2_x, t2_y, t2_z) ;
+        let mut p3 = Point3::form(t3_x, t3_y, t3_z);
+        p1 = Vec3::rotate_x(p1,300.0);
+        p2 = Vec3::rotate_x(p2,300.0);
+        p3 = Vec3::rotate_x(p3,300.0);
+        objs.push(Arc::new(Triangle::form(p1,
+                                          p2,p3,x.clone())));
+
+        stl.read_angle_info();
+    }
+    let bvh_node = BvhNode::form(objs.as_mut_slice(),0.0001,f64::MAX,0);
+    println!("bvh树深度 {}",f32::log2(100.0));
+    world.add(Arc::new(bvh_node.unwrap()));
     let world_arc = Arc::new(world);
     //Camera
-    let lf = Point3::form(0.0,0.0,2.0);
-    let la =Vec3::form(0.0,0.0,-1.0);
+    let lf = Point3::form(0.0,0.0,40.0);
+    let la = Vec3::form(0.0,15.0,-5.0);
     let dist_to_focus = (lf-la).length();
     let camera_arc = Arc::new(Camera::new(
-        lf, la, Vec3::form(0.0,1.0,0.0),90.0,aspect_ratio,2.0,dist_to_focus));
+        lf, la, Vec3::form(0.0,1.0,0.0),45.0,aspect_ratio,2.0,dist_to_focus));
     let count = 10; //图形渲染线程数
     let (tx, rx) = mpsc::channel();
     for thread_n in  0 .. count{
@@ -132,7 +207,7 @@ fn main() {
                         let ray = camera_t.get_ray(u,v);
                         pixel_color += ray_color(ray,world_t.borrow(),max_depth);
                     }
-                    write_color(file.borrow_mut(), pixel_color,samples_per_pixel)
+                    write_color(file.borrow_mut(), pixel_color,samples_per_pixel);
                 }
             }
             let _ = chan.send(());

@@ -15,5 +15,6 @@ pub(crate) fn write_color(std: &mut File, color:Color,samples_per_pixel:i32){
 
 
     let s = format!("{}",Color::form(r,g,b));
+
     let _ = std.write(s.as_bytes());
 }
