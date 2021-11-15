@@ -1,6 +1,6 @@
 use crate::ray::{Point3, Ray};
 use crate::vec3::Vec3;
-use std::fmt::{Debug, Display};
+use std::fmt::{Debug};
 use std::sync::Arc;
 use crate::material::Materials;
 use crate::shape::AABB;
@@ -18,7 +18,7 @@ pub(crate) struct HitRecorder {
 pub(crate) trait Hittable:Send+ Sync +Debug  {
     fn hit(&self,ray:Ray,t_min:f64,t_max:f64,rec:&mut HitRecorder) -> bool;
     fn bounding_box(&self,t0:f64,t1:f64) -> Option<AABB>;
-    fn get_axis(&self,s:i32) -> f64;
+    fn get_center_point(&self, dir:i32) -> f64;
 }
 
 //计算射线物体的前面还是后面

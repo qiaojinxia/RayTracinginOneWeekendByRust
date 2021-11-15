@@ -4,14 +4,11 @@ use crate::shape::AABB;
 use std::fmt::{Debug, Formatter};
 use std::sync::Arc;
 use crate::common::{ rand_i32, surrounding_box};
-use std::borrow::{BorrowMut, Borrow};
-use crate::vec3::Vec3;
+use std::borrow::{BorrowMut};
 use crate::sort::quick_select;
 
 pub(crate) struct BvhNode{
     src_objects:Option<Vec<Arc<dyn Hittable>>>,
-    time0:f64,
-    time1:f64,
     contains_objs:i32,
     bbox:Option<AABB>,
     pub(crate) left:Option<Arc<BvhNode>>,
@@ -20,7 +17,7 @@ pub(crate) struct BvhNode{
 
 impl Debug for BvhNode {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        todo!()
+        write!(f,"{:?}",self)
     }
 }
 
@@ -57,7 +54,7 @@ impl Hittable for BvhNode {
         self.bbox
     }
 
-    fn get_axis(&self, s: i32) -> f64 {
+    fn get_center_point(&self, _dir: i32) -> f64 {
         todo!()
     }
 }
@@ -81,8 +78,6 @@ impl BvhNode{
             }
             return Some(Self{
                 src_objects: Some(vec),
-                time0: 0.0,
-                time1: 0.0,
                 contains_objs: objs_num,
                 bbox: total_box,
                 left: None,
@@ -98,8 +93,6 @@ impl BvhNode{
         let total_num = left.as_ref().unwrap().contains_objs + right.as_ref().unwrap().contains_objs;
         Some(Self{
             src_objects: None,
-            time0: 0.0,
-            time1: 0.0,
             contains_objs: total_num,
             bbox: xbox,
             left: Some(Arc::new(left.unwrap())),

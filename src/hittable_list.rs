@@ -36,7 +36,7 @@ impl Hittable for HittableList{
         let mut first_box = true;
         let mut tmp_box = None;
         for obj in self.objects.iter(){
-            let mut out_box= obj.clone().bounding_box(t0,t1);
+            let out_box= obj.clone().bounding_box(t0,t1);
             if first_box {
                 tmp_box = out_box;
                 first_box = false;
@@ -47,7 +47,7 @@ impl Hittable for HittableList{
         tmp_box
     }
 
-    fn get_axis(&self, s: i32) -> f64 {
+    fn get_center_point(&self, _dir: i32) -> f64 {
         todo!()
     }
 }

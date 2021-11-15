@@ -4,10 +4,7 @@ use crate::hit::{Hittable, HitRecorder};
 use std::fmt::{Debug, Formatter};
 use std::sync::Arc;
 use crate::material::Materials;
-
-use crate::common;
-use std::cmp::Ordering::Less;
-use crate::common::cmp_f64;
+use crate::common::{cmp_f64, f64_near_zero};
 
 
 pub(crate) struct Sphere{
@@ -67,12 +64,12 @@ impl Hittable for Sphere{
             ))
     }
 
-    fn get_axis(&self, s: i32) -> f64 {
-        if s == 0 {
+    fn get_center_point(&self, dir: i32) -> f64 {
+        if dir == 0 {
             return self.center.x
-        }else if s == 1{
+        }else if dir == 1{
             return self.center.y
-        }else if s == 2{
+        }else if dir == 2{
             return self.center.z
         }
         panic!("错误的索引")
@@ -98,7 +95,7 @@ impl Triangle{
             material: Some(material)
         }
     }
-    pub(crate) fn form_x(center:Point3, height:f64,weight:f64,material:Arc<dyn Materials>) -> Self{
+    pub(crate) fn form_by_center(center:Point3, height:f64,weight:f64,material:Arc<dyn Materials>) -> Self{
         let p1 = Point3::form( center.x,center.y + height / 2.0,center.z);
         let p2 = Point3::form(center.x - weight/2.0,center.y - height / 2.0,center.z);
         let p3 = Point3::form(center.x + weight/2.0,center.y - height / 2.0,center.z);
@@ -129,7 +126,7 @@ impl Hittable for Triangle{
         let p2 = Vec3::cross(t1,e1 );
         let mut molecule = Vec3::dot(p1,t1);
         let denominator = Vec3::dot(p1,e1);
-        if denominator > - common::MIN && denominator <  common::MIN{
+        if f64_near_zero(denominator) {
             return false
         }
         let u = molecule / denominator;
@@ -149,20 +146,20 @@ impl Hittable for Triangle{
         rec.material = self.material.clone();
         rec.t = t;
         //三角法向量 = 2条边求叉积
-        let mut outward_normal = Vec3::cross(e1,e2).unit_vector();
+        let outward_normal = Vec3::cross(e1,e2).unit_vector();
         rec.set_face_normal(ray,outward_normal);
         rec.p = Some(ray.at(rec.t));
         true
 
     }
     //计算三角面的 包围盒 求出 最小的 三个点 和最大三个点 构成的长方体
-    fn bounding_box(&self, t0: f64, t1: f64) -> Option<AABB> {
+    fn bounding_box(&self, _t0: f64, _t1: f64) -> Option<AABB> {
         let mut min_point = Point3::new();
         let mut max_point = Point3::new();
         for i in 0..3{
-            let mut i1 = self.p1.get_field(i);
-            let mut i2 = self.p2.get_field(i);
-            let mut i3 = self.p3.get_field(i);
+            let i1 = self.p1.get_field(i);
+            let i2 = self.p2.get_field(i);
+            let i3 = self.p3.get_field(i);
             let mut nums = vec![i1, i2, i3];
             nums.sort_by(|a, b| cmp_f64(*a, *b));
             min_point.set_i_field(i,nums[0]);
@@ -171,12 +168,12 @@ impl Hittable for Triangle{
         Some(AABB::form(min_point,max_point))
     }
 
-    fn get_axis(&self, s: i32) -> f64 {
-        if s == 0{
+    fn get_center_point(&self, dir: i32) -> f64 {
+        if dir == 0{
             return self.w.x;
-        }else if s == 1{
+        }else if dir == 1{
             return self.w.y;
-        }else if s == 2{
+        }else if dir == 2{
             return self.w.z;
         }
         panic!("错误的索引!")
@@ -200,15 +197,15 @@ impl AABB{
 
 impl Debug for AABB {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        todo!()
+        write!(f,"{:?}",self)
     }
 }
 
 impl AABB{
     pub(crate) fn hit(&self, ray: Ray, t_min: f64, t_max: f64, _rec: &mut HitRecorder) -> bool {
-        let invD = Point3::form(1.0 / ray.direction().x,1.0 / ray.direction().y,1.0 / ray.direction().z);
-        let t_in = (self.minimum - ray.origin()) * invD;
-        let t_out=(self.maximum - ray.origin()) * invD;
+        let inv_d = Point3::form(1.0 / ray.direction().x,1.0 / ray.direction().y,1.0 / ray.direction().z);
+        let t_in = (self.minimum - ray.origin()) * inv_d;
+        let t_out=(self.maximum - ray.origin()) * inv_d;
         let min_t = Vec3::min(t_in,t_out);
         let max_t = Vec3::max(t_in,t_out);
         //求最晚进入的时间(3对面都进入) 和 最早一条线离开的时间(离开一个对面就算离开包围盒)

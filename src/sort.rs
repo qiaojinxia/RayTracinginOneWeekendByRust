@@ -8,10 +8,10 @@ fn partition(items: &mut [Arc<dyn Hittable>], left: usize, right: usize,a:i32) -
     let mut random = rand::thread_rng();
     let mut i = left;
     let pivot_idx = random.gen_range(left, right + 1);
-    let pivot = items[pivot_idx].get_axis(a);
+    let pivot = items[pivot_idx].get_center_point(a);
     items.swap(pivot_idx, right);
     for j in left..=right {
-        if items[j].get_axis(a) < pivot {
+        if items[j].get_center_point(a) < pivot {
             items.swap(i, j);
             i += 1;
         }

@@ -1,12 +1,9 @@
 use rand::{thread_rng, Rng};
-use std::ops::{Shr, Neg};
 use std::convert::TryFrom;
 use std::cmp::Ordering;
 use std::cmp::Ordering::{Less, Equal, Greater};
 use crate::shape::AABB;
 use crate::ray::Point3;
-use crate::hit::Hittable;
-use std::sync::Arc;
 
 const PI: f64 = 3.1415926535897932385;
 pub(crate) const MIN: f64 = 1e-10;
@@ -48,7 +45,7 @@ pub(crate) fn parse_f32_little_endian(bytes:Vec<u8>) -> f32{
 
 pub(crate) fn f64_near_zero(n:f64) -> bool{
     let s = 1e-8;
-    if n <= s{
+    if n <= s && n >= -s {
         return true
     }
     return false;

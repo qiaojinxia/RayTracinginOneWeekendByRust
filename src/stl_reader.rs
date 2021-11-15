@@ -3,7 +3,7 @@ use std::io::Read;
 use crate::common::{ parse_i32_little_endian, parse_f32_little_endian};
 
 trait Reader{
-    fn ReaderNext();
+    fn reader_next();
 }
 
 pub(crate) struct  StlReader{
@@ -12,10 +12,10 @@ pub(crate) struct  StlReader{
 }
 
 impl StlReader{
-    pub(crate) fn newStlReader(filePath:String) -> Self{
-        let mut file = File::open(filePath).unwrap();
+    pub(crate) fn new_stl_reader(file_path:String) -> Self{
+        let mut file = File::open(file_path).unwrap();
         let mut buffer:Vec<u8> = Vec::new();
-        file.read_to_end(&mut buffer);
+        let _res = file.read_to_end(&mut buffer);
         Self{
             buff: buffer,
             index: 80

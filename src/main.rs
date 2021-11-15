@@ -41,7 +41,7 @@ pub(crate) fn random_scene() -> Vec<Arc<dyn Hittable>> {
             let choose_mat = rand_f64();
             let center = Point3::form(a + 0.9 * rand_f64(),0.2,b + 0.9 * rand_f64());
             if (center - Point3::form(4.0,0.2,0.0)).length() > 0.9{
-                let mut sphere_material:Arc<dyn Materials>;
+                let sphere_material:Arc<dyn Materials>;
                 if choose_mat < 0.8{
                     let albedo = Color::random() * Color::random();
                     sphere_material = Arc::new(Lambertian::form(albedo.x,albedo.y,albedo.z));
@@ -144,14 +144,14 @@ fn main() {
     // world.add(Arc::new(Triangle::form_x(Point3::form(0.0,1.0,-1.0),1.0,1.0,x)));
 
     //读取stl模型三角面
-    let mut stl = StlReader::newStlReader("cat.stl".to_string());
+    let mut stl = StlReader::new_stl_reader("cat.stl".to_string());
     let angle_num = stl.read_angle_num();
     println!("模型三角形数量:{}",angle_num);
     let x= Arc::new(Metal::form(0.1,0.6,0.2,1.0));
-    for i in 0..angle_num{
-        let n_x = stl.read_angle_point();
-        let n_y = stl.read_angle_point();
-        let n_z = stl.read_angle_point();
+    for _i in 0..angle_num{
+        let _n_x = stl.read_angle_point();
+        let _n_y = stl.read_angle_point();
+        let _n_z = stl.read_angle_point();
 
         let t1_x = stl.read_angle_point();
         let t1_y = stl.read_angle_point();
