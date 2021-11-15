@@ -2,7 +2,7 @@ use std::sync::Arc;
 use crate::hit::{Hittable, HitRecorder};
 use crate::ray::Ray;
 use crate::shape::AABB;
-use crate::common::surrounding_box;
+use crate::common::{surrounding_box, Axis};
 
 #[derive(Debug, Clone)]
 pub(crate) struct HittableList{
@@ -32,11 +32,11 @@ impl Hittable for HittableList{
         return hit_anything
     }
     //计算 整个场景的最大包围盒
-    fn bounding_box(&self, t0: f64, t1: f64) -> Option<AABB> {
+    fn bounding_box(&self) -> Option<AABB> {
         let mut first_box = true;
         let mut tmp_box = None;
         for obj in self.objects.iter(){
-            let out_box= obj.clone().bounding_box(t0,t1);
+            let out_box= obj.clone().bounding_box();
             if first_box {
                 tmp_box = out_box;
                 first_box = false;
@@ -47,7 +47,7 @@ impl Hittable for HittableList{
         tmp_box
     }
 
-    fn get_center_point(&self, _dir: i32) -> f64 {
+    fn get_center_point(&self, _a: &Axis) -> f64 {
         todo!()
     }
 }

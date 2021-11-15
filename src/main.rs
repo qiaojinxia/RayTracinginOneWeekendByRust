@@ -26,6 +26,7 @@ use crate::common::{rand_f64, clamp, rand_range_f64};
 use crate::material::{Lambertian, Metal, Dielectric, Materials};
 use crate::stl_reader::StlReader;
 use crate::bvh::BvhNode;
+use std::time::Instant;
 
 type Color = Vec3;
 
@@ -113,6 +114,7 @@ fn ray_color(ray:Ray,world:&HittableList,depth:i32) -> Color{
 }
 
 fn main() {
+    let start = Instant::now();
     //Image
     let aspect_ratio = 16.0 / 9.0;
     let image_width = 400;
@@ -146,7 +148,7 @@ fn main() {
 
     let x= Arc::new(Metal::form(0.949,0.7529,0.3372,1.0));
     stl.raed_all_shape_info(&mut objs,x,300.0);
-    let bvh_node = BvhNode::form(objs.as_mut_slice(),0.0001,f64::MAX,0);
+    let bvh_node = BvhNode::form(objs.as_mut_slice(),0.0001,f64::MAX);
     println!("bvh树深度 {}",f32::log2(100.0));
     world.add(Arc::new(bvh_node.unwrap()));
     let world_arc = Arc::new(world);
@@ -188,4 +190,5 @@ fn main() {
     for _ in 0..count {
         let _ = rx.recv();
     }
+    println!("time cost: {:?} ms",start.elapsed().as_millis());
 }

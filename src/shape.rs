@@ -4,7 +4,7 @@ use crate::hit::{Hittable, HitRecorder};
 use std::fmt::{Debug, Formatter};
 use std::sync::Arc;
 use crate::material::Materials;
-use crate::common::{cmp_f64, f64_near_zero};
+use crate::common::{cmp_f64, f64_near_zero, Axis};
 
 
 pub(crate) struct Sphere{
@@ -56,7 +56,7 @@ impl Hittable for Sphere{
         return true;
     }
 
-    fn bounding_box(&self, _t0: f64, _t1: f64) -> Option<AABB> {
+    fn bounding_box(&self) -> Option<AABB> {
         let r = Point3::form(self.radius,self.radius,self.radius);
             Some(AABB::form(
                 self.center - r,
@@ -64,15 +64,8 @@ impl Hittable for Sphere{
             ))
     }
 
-    fn get_center_point(&self, dir: i32) -> f64 {
-        if dir == 0 {
-            return self.center.x
-        }else if dir == 1{
-            return self.center.y
-        }else if dir == 2{
-            return self.center.z
-        }
-        panic!("错误的索引")
+    fn get_center_point(&self, a: &Axis) -> f64 {
+        a.call(self.center)
     }
 }
 
@@ -153,7 +146,7 @@ impl Hittable for Triangle{
 
     }
     //计算三角面的 包围盒 求出 最小的 三个点 和最大三个点 构成的长方体
-    fn bounding_box(&self, _t0: f64, _t1: f64) -> Option<AABB> {
+    fn bounding_box(&self) -> Option<AABB> {
         let mut min_point = Point3::new();
         let mut max_point = Point3::new();
         for i in 0..3{
@@ -168,15 +161,8 @@ impl Hittable for Triangle{
         Some(AABB::form(min_point,max_point))
     }
 
-    fn get_center_point(&self, dir: i32) -> f64 {
-        if dir == 0{
-            return self.w.x;
-        }else if dir == 1{
-            return self.w.y;
-        }else if dir == 2{
-            return self.w.z;
-        }
-        panic!("错误的索引!")
+    fn get_center_point(&self, a: &Axis) -> f64 {
+        a.call(self.w)
     }
 }
 

@@ -4,6 +4,25 @@ use std::cmp::Ordering;
 use std::cmp::Ordering::{Less, Equal, Greater};
 use crate::shape::AABB;
 use crate::ray::Point3;
+use crate::vec3::Vec3;
+
+pub enum Axis{
+    X,
+    Y,
+    Z,
+}
+
+impl Axis{
+    pub(crate) fn call(&self,vec:Vec3) -> f64{
+        match self {
+            Axis::X => {vec.x}
+            Axis::Y => {vec.y}
+            Axis::Z => {vec.z}
+            _ => {panic!("错误的轴!")}
+        }
+    }
+
+}
 
 const PI: f64 = 3.1415926535897932385;
 pub(crate) const MIN: f64 = 1e-10;

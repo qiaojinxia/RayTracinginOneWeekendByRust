@@ -3,8 +3,9 @@ extern crate rand;
 use rand::Rng;
 use std::sync::Arc;
 use crate::hit::Hittable;
+use crate::common::Axis;
 
-fn partition(items: &mut [Arc<dyn Hittable>], left: usize, right: usize,a:i32) -> usize {
+fn partition(items: &mut [Arc<dyn Hittable>], left: usize, right: usize,a:&Axis) -> usize {
     let mut random = rand::thread_rng();
     let mut i = left;
     let pivot_idx = random.gen_range(left, right + 1);
@@ -20,7 +21,7 @@ fn partition(items: &mut [Arc<dyn Hittable>], left: usize, right: usize,a:i32) -
     i
 }
 
-pub(crate) fn quick_select(items: &mut [Arc<dyn Hittable>], k: usize,a:i32) -> usize {
+pub(crate) fn quick_select(items: &mut [Arc<dyn Hittable>], k: usize,a:&Axis) -> usize {
     let k = k - 1;  // k is 1-based index
     let mut left = 0;
     let mut right = items.len() - 1;
