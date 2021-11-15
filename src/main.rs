@@ -216,6 +216,4 @@ fn main() {
     for _ in 0..count {
         let _ = rx.recv();
     }
-
-
 }
