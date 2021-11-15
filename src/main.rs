@@ -139,7 +139,7 @@ fn main() {
     world.add(Arc::new(Sphere::form(Point3::form(0.0,-100.5,-1.0),100.0,m_ground)));
     // world.add(Arc::new(Sphere::form(Point3::form(0.0,0.0,-1.0),0.5,m_center)));
     // world.add(Arc::new(Sphere::form(Point3::form(-1.0,0.0,-1.0),0.5,m_left)));
-    objs.push(Arc::new(Sphere::form(Point3::form(5.0,0.0,5.0),-10.0,m_left1.clone())));
+    // objs.push(Arc::new(Sphere::form(Point3::form(5.0,0.0,5.0),-10.0,m_left1.clone())));
     // objs.push(Arc::new(Sphere::form(Point3::form(1.0,0.0,-1.0),10.0,m_right.clone())));
     // world.add(Arc::new(Triangle::form_x(Point3::form(0.0,1.0,-1.0),1.0,1.0,x)));
 

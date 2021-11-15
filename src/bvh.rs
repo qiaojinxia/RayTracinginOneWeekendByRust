@@ -87,6 +87,7 @@ impl BvhNode{
         }
         let mut max_box = None;
         let mut first = true;
+        //计算包围盒 优先划分 长度比较长的包围盒
         for v in rc_objects.iter(){
             if first {
                 max_box = v.bounding_box();
