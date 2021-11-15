@@ -17,7 +17,7 @@ use std::{ thread};
 use crate::draw::write_color;
 use std::borrow::{BorrowMut, Borrow};
 use crate::ray::{Point3, Ray};
-use crate::shape::{Sphere, Triangle};
+use crate::shape::{Sphere};
 use crate::hit::{HitRecorder, Hittable};
 use crate::hittable_list::HittableList;
 use std::sync::{Arc, mpsc};
@@ -33,7 +33,6 @@ pub(crate) fn random_scene() -> Vec<Arc<dyn Hittable>> {
     let mut world:Vec<Arc<dyn Hittable>> = vec![];
     let ground_material = Arc::new(Lambertian::form(0.5,0.5,0.5));
     world.push(Arc::new(Sphere::form(Point3::set(0.0,-1000.0,0.0),1000.0,ground_material)));
-
     for i in -11 .. 11{
         for j in -11 .. 11{
             let a = i as f64;
@@ -122,7 +121,6 @@ fn main() {
     let max_depth = 100;
 
 
-
     // //Materials
     let m_ground = Arc::new(Lambertian::form(176.0/255.0,196.0/255.0,222.0/255.0,));
     // // let m_center = Arc::new(Lambertian::form(0.7,0.3,0.3));
@@ -131,8 +129,8 @@ fn main() {
     // let m_left= Arc::new(Dielectric::form(1.5));
     let m_left1= Arc::new(Dielectric::form(0.8));
     // let m_right= Arc::new(Metal::form(0.8,0.6,0.2,1.0));
-    // let x= Arc::new(Metal::form(0.1,0.6,0.2,1.0));
-    random_scene();
+    // let golden= Arc::new(Metal::form(0.1,1.0,0.0,1.0));
+
     let mut objs:Vec<Arc<dyn Hittable>> = vec![];
     //World
     let mut world = HittableList::new();
@@ -145,35 +143,9 @@ fn main() {
 
     //读取stl模型三角面
     let mut stl = StlReader::new_stl_reader("cat.stl".to_string());
-    let angle_num = stl.read_angle_num();
-    println!("模型三角形数量:{}",angle_num);
-    let x= Arc::new(Metal::form(0.1,0.6,0.2,1.0));
-    for _i in 0..angle_num{
-        let _n_x = stl.read_angle_point();
-        let _n_y = stl.read_angle_point();
-        let _n_z = stl.read_angle_point();
 
-        let t1_x = stl.read_angle_point();
-        let t1_y = stl.read_angle_point();
-        let t1_z = stl.read_angle_point();
-        let t2_x = stl.read_angle_point();
-        let t2_y = stl.read_angle_point();
-        let t2_z = stl.read_angle_point();
-
-        let t3_x = stl.read_angle_point();
-        let t3_y = stl.read_angle_point();
-        let t3_z = stl.read_angle_point();
-        let mut p1 = Point3::form(t1_x,t1_y,t1_z) ;
-        let mut p2 = Point3::form(t2_x, t2_y, t2_z) ;
-        let mut p3 = Point3::form(t3_x, t3_y, t3_z);
-        p1 = Vec3::rotate_x(p1,300.0);
-        p2 = Vec3::rotate_x(p2,300.0);
-        p3 = Vec3::rotate_x(p3,300.0);
-        objs.push(Arc::new(Triangle::form(p1,
-                                          p2,p3,x.clone())));
-
-        stl.read_angle_info();
-    }
+    let x= Arc::new(Metal::form(0.949,0.7529,0.3372,1.0));
+    stl.raed_all_shape_info(&mut objs,x,300.0);
     let bvh_node = BvhNode::form(objs.as_mut_slice(),0.0001,f64::MAX,0);
     println!("bvh树深度 {}",f32::log2(100.0));
     world.add(Arc::new(bvh_node.unwrap()));

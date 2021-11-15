@@ -1,6 +1,12 @@
 use std::fs::File;
 use std::io::Read;
 use crate::common::{ parse_i32_little_endian, parse_f32_little_endian};
+use crate::ray::Point3;
+use crate::vec3::Vec3;
+use std::sync::Arc;
+use crate::shape::Triangle;
+use crate::hit::Hittable;
+use crate::material::Materials;
 
 trait Reader{
     fn reader_next();
@@ -36,5 +42,35 @@ impl StlReader{
 
     pub(crate)  fn read_angle_info(&mut self){
         self.index += 2;
+    }
+
+    pub(crate) fn raed_all_shape_info(&mut self,objs:&mut Vec<Arc<dyn Hittable>>,material:Arc<dyn Materials>,angle:f64){
+        let angle_num = self.read_angle_num();
+        println!("三角形数量:{}",angle_num);
+        for _i in 0..angle_num{
+            let _n_x = self.read_angle_point();
+            let _n_y = self.read_angle_point();
+            let _n_z = self.read_angle_point();
+
+            let t1_x = self.read_angle_point();
+            let t1_y = self.read_angle_point();
+            let t1_z = self.read_angle_point();
+            let t2_x = self.read_angle_point();
+            let t2_y = self.read_angle_point();
+            let t2_z = self.read_angle_point();
+
+            let t3_x = self.read_angle_point();
+            let t3_y = self.read_angle_point();
+            let t3_z = self.read_angle_point();
+            let mut p1 = Point3::form(t1_x,t1_y,t1_z) ;
+            let mut p2 = Point3::form(t2_x, t2_y, t2_z) ;
+            let mut p3 = Point3::form(t3_x, t3_y, t3_z);
+            p1 = Vec3::rotate_x(p1,angle);
+            p2 = Vec3::rotate_x(p2,angle);
+            p3 = Vec3::rotate_x(p3,angle);
+            objs.push(Arc::new(Triangle::form(p1,
+                                              p2,p3,material.clone())));
+            self.read_angle_info();
+        }
     }
 }
