@@ -6,6 +6,11 @@ use crate::shape::AABB;
 use crate::ray::Point3;
 use crate::vec3::Vec3;
 
+pub enum Common{
+    UV(f64,f64),
+    None
+}
+
 pub enum Axis{
     X,
     Y,

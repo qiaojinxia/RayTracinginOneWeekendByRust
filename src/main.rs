@@ -10,6 +10,7 @@ mod material;
 mod stl_reader;
 mod bvh;
 mod sort;
+mod texture;
 
 use std::fmt::{Display, Formatter};
 use crate::vec3::Vec3;
@@ -120,7 +121,7 @@ fn main() {
     let image_width = 400;
     let image_height = (image_width as f64 / aspect_ratio) as i32;
     let samples_per_pixel = 100;
-    let max_depth = 100;
+    let max_depth = 1000;
 
 
     // //Materials

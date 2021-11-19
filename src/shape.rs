@@ -4,7 +4,8 @@ use crate::hit::{Hittable, HitRecorder};
 use std::fmt::{Debug, Formatter};
 use std::sync::Arc;
 use crate::material::Materials;
-use crate::common::{cmp_f64, f64_near_zero, Axis};
+use crate::common::{cmp_f64, f64_near_zero, Axis, Common};
+use std::f64::consts::PI;
 
 
 pub(crate) struct Sphere{
@@ -20,6 +21,11 @@ impl Sphere {
             radius,
             material:Some(material)
         }
+    }
+    pub(crate) fn get_sphere_uv(p:Point3) -> Common{
+        let theta = -p.y.acos();
+        let phi = -p.z.atan2(p.x) + PI;
+        Common::UV( phi / (2.0 * PI),theta / PI)
     }
 }
 
@@ -53,6 +59,15 @@ impl Hittable for Sphere{
         rec.material = self.material.clone();
         let outward_normal = (rec.p.unwrap() - self.center) / self.radius;
         rec.set_face_normal(ray,outward_normal);
+        let res = Self::get_sphere_uv(outward_normal);
+        match res {
+            Common::UV(u, v) => {
+                rec.u = u;
+                rec.v = v;
+
+            }
+            Common::None => {}
+        }
         return true;
     }
 

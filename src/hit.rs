@@ -13,6 +13,8 @@ pub(crate) struct HitRecorder {
     pub(crate) normal:Option<Vec3>,
     pub(crate) material:Option<Arc<dyn Materials>>,
     pub(crate) t:f64,
+    pub(crate) u:f64,
+    pub(crate) v:f64,
     pub(crate) front_face:bool,
 }
 
@@ -31,6 +33,8 @@ impl HitRecorder{
             normal: None,
             material: None,
             t: 0.0,
+            u: 0.0,
+            v: 0.0,
             front_face: false
         }
     }

@@ -3,6 +3,7 @@ use crate::hit::HitRecorder;
 use crate::Color;
 use crate::vec3::Vec3;
 use crate::common::rand_f64;
+use std::sync::Arc;
 
 
 pub(crate) trait Materials:Send + Sync{
@@ -11,13 +12,13 @@ pub(crate) trait Materials:Send + Sync{
 }
 
 pub(crate) struct Lambertian{
-    pub(crate) albedo:Color,
+    pub(crate) albedo:Option<Arc<dyn Texture>>,
 }
 
 impl Lambertian{
-    pub(crate) fn form(r:f64,g:f64,b:f64) -> Lambertian{
+    pub(crate) fn form(a:Option<Arc<dyn Texture>>) -> Lambertian{
         Self{
-            albedo: Vec3::form(r,g,b),
+            albedo: a,
         }
     }
 }
@@ -28,11 +29,12 @@ impl Materials for Lambertian{
         if scatter_direction.near_zero(){
             scatter_direction = rec.normal.unwrap();
         }
+
         return Some(Ray::form(rec.p.unwrap(), scatter_direction))
     }
 
-    fn get_color(&self) -> Color {
-        self.albedo
+    fn get_color(&self) -> Arc<dyn Texture> {
+        self.albedo.unwrap().clone()
     }
 }
 
