@@ -61,7 +61,7 @@ impl Hittable for BvhNode {
 }
 impl BvhNode{
     pub(crate) fn form(rc_objects: &mut [Arc<dyn Hittable>],t0:f64,t1:f64) -> Option<BvhNode>{
-        if rc_objects.len() <= 10{
+        if rc_objects.len() <= 5{
             let mut vec = vec![];
             let mut total_box = None;
             let mut first = true;

@@ -53,6 +53,6 @@ impl Camera{
         let rd =  Vec3::random_in_unit_disk() * self.lens_radius ;
         let offset = u * rd.x + v * rd.y;
         return Ray::form(self.origin + offset,self.lower_left_corner +
-            self.horizontal * u + self.vertical * v - self.origin - offset)
+              self.horizontal * u + self.vertical * v - self.origin - offset)
     }
 }

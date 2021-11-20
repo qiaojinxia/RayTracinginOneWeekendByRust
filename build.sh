@@ -2,7 +2,7 @@
 file_name="image.ppm"
 rm -rf $file_name
 echo "P3
-       400 225
+       800 800
       255" >> $file_name
 search(){
 int=0

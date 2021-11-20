@@ -10,6 +10,8 @@ mod material;
 mod stl_reader;
 mod bvh;
 mod sort;
+mod texture;
+mod sences;
 
 use std::fmt::{Display, Formatter};
 use crate::vec3::Vec3;
@@ -27,50 +29,12 @@ use crate::material::{Lambertian, Metal, Dielectric, Materials};
 use crate::stl_reader::StlReader;
 use crate::bvh::BvhNode;
 use std::time::Instant;
+use crate::texture::CheckerTexture;
+use crate::sences::{two_spheres, random_scene, two_perlin_spheres, simple_light, cornell_box};
 
 type Color = Vec3;
 
-pub(crate) fn random_scene() -> Vec<Arc<dyn Hittable>> {
-    let mut world:Vec<Arc<dyn Hittable>> = vec![];
-    let ground_material = Arc::new(Lambertian::form(0.5,0.5,0.5));
-    world.push(Arc::new(Sphere::form(Point3::set(0.0,-1000.0,0.0),1000.0,ground_material)));
-    for i in -11 .. 11{
-        for j in -11 .. 11{
-            let a = i as f64;
-            let b = j as f64;
-            let choose_mat = rand_f64();
-            let center = Point3::form(a + 0.9 * rand_f64(),0.2,b + 0.9 * rand_f64());
-            if (center - Point3::form(4.0,0.2,0.0)).length() > 0.9{
-                let sphere_material:Arc<dyn Materials>;
-                if choose_mat < 0.8{
-                    let albedo = Color::random() * Color::random();
-                    sphere_material = Arc::new(Lambertian::form(albedo.x,albedo.y,albedo.z));
-                    world.push(Arc::from(Sphere::form(center, 0.2, sphere_material)));
-                }else if choose_mat < 0.95{
-                    let albedo = Color::random_range(0.5, 1.0);
-                    let fuzz = rand_range_f64(0.0,0.5);
-                    sphere_material = Arc::new(Metal::form_c(albedo,fuzz));
-                    world.push(Arc::new(Sphere::form(center,0.2,sphere_material)));
-                }else{
-                    let sphere_material = Arc::new(Dielectric::form(1.5));
-                    world.push(Arc::new(Sphere::form(center,0.2,sphere_material)));
-                }
-            }
-        }
-    }
-    let material1 = Arc::new(Dielectric::form(  1.5));
-    world.push(Arc::new(Sphere::form(Point3::form(0.0,1.0,0.0),1.0,material1)));
 
-    let material2 = Arc::new(Lambertian::form(  0.4, 0.2, 0.1));
-    world.push(Arc::new(Sphere::form(Point3::form(-4.0,1.0,0.0),1.0,material2)));
-
-
-    let material3 = Arc::new(Metal::form(  0.7, 0.6, 0.5, 0.0));
-    world.push(Arc::new(Sphere::form(Point3::form(4.0,1.0,0.0),1.0,material3)));
-
-
-    world
-}
 
 impl Display for Color{
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -91,73 +55,109 @@ impl Color{
     }
 }
 
-fn ray_color(ray:Ray,world:&HittableList,depth:i32) -> Color{
+fn ray_color(ray:Ray,background:&Color,world:&HittableList,depth:i32) -> Color{
     let mut rec = HitRecorder::new();
     if depth <= 0 {
         return Color::set(0.0,0.0,0.0);
     }
-    if world.hit(ray, 0.000001, f64::MAX, rec.borrow_mut()){
-        let attenuation = rec.material.clone().unwrap().get_color();
-        let ray = rec.material.clone().unwrap().scatter(&ray, rec);
+    if world.hit(ray, 0.0001, f64::MAX, rec.borrow_mut()){
+        let ray = rec.material.clone().unwrap().scatter(&ray, &mut rec);
+        let emitted= rec.material.clone().unwrap().emitted(rec.u,rec.v,rec.p.unwrap());
         return match ray {
             Some(scattered) => {
-                attenuation * ray_color(scattered, world, depth - 1)
+                let attenuation = rec.material.clone().unwrap().get_color(&rec);
+                emitted + attenuation * ray_color(scattered, background,world, depth - 1)
             }
-            None => { Color::set(0.0, 0.0, 0.0) }
+                None => emitted
         }
         // let target = rec.p.unwrap() + Vec3::random_in_hemisphere(rec.normal.unwrap());
         // return ray_color(Ray::form(rec.p.unwrap(),target- rec.p.unwrap()),world.borrow(),depth-1) * 0.5;
     }
-    let unit_direction = ray.direction().unit_vector();
-    let t = 0.5 * (unit_direction.y + 1.0);
-    Color::set(1.0,1.0,1.0) * (1.0 - t ) + Color::set(0.5,0.7,1.0) * t
+    // let unit_direction = ray.direction().unit_vector();
+    // let t = 0.5 * (unit_direction.y + 1.0);
+    // Color::set(1.0,1.0,1.0) * (1.0 - t ) + Color::set(0.5,0.7,1.0) * t
+    *background
 }
+
+
 
 fn main() {
     let start = Instant::now();
+    let mut lookfrom = Vec3::new();
+    let mut lookat  = Vec3::new();
+    let mut vfov = 40.0;
+    let mut aperture = 0.0;
+    let seneces = 6;
+    let mut objs = vec![];
+    let mut background= Color::form(0.0,0.0,0.0);
+
     //Image
-    let aspect_ratio = 16.0 / 9.0;
-    let image_width = 400;
+    let mut image_width = 400;
+    let mut samples_per_pixel = 100;
+    let mut aspect_ratio = 16.0 / 9.0;
+
+    match seneces {
+        1 => {
+            objs = random_scene();
+            lookfrom = Point3::form(13.0,2.0,3.0);
+            lookat = Point3::form(0.0,0.0,0.0);
+            background= Color::form(0.70, 0.80, 1.00);
+            vfov = 20.0;
+            aperture = 0.1;
+        }
+        2 => {
+            objs = two_spheres();
+            lookfrom = Point3::form(13.0,2.0,3.0);
+            lookat = Point3::form(0.0,0.0,0.0);
+            background= Color::form(0.70, 0.80, 1.00);
+            vfov = 20.0;
+        }
+        3 =>{
+            objs = two_perlin_spheres();
+            lookfrom = Point3::form(13.0,2.0,3.0);
+            lookat = Point3::form(0.0,0.0,0.0);
+            background= Color::form(0.70, 0.80, 1.00);
+            vfov = 20.0;
+        }
+        5 =>{
+            background= Color::form(0.0, 0.0, 0.0);
+            objs = simple_light();
+            samples_per_pixel = 400;
+            lookfrom = Point3::form(26.0,3.0,6.0);
+            lookat = Point3::form(0.0,2.0,0.0);
+            vfov = 20.0;
+        }
+        6 =>{
+            objs = cornell_box();
+            aspect_ratio = 1.0;
+            image_width = 800;
+            samples_per_pixel = 100;
+            background = Color::form(0.0,0.0,0.0);
+            lookfrom = Point3::form(278.0, 278.0, -800.0);
+            lookat = Point3::form(278.0, 278.0, 0.0);
+            vfov = 40.0;
+        }
+        _ => {}
+    }
     let image_height = (image_width as f64 / aspect_ratio) as i32;
-    let samples_per_pixel = 100;
     let max_depth = 100;
+    let dist_to_focus = 10.0;
+    //Camera
+    let camera_arc = Arc::new(Camera::new(
+        lookfrom, lookat, Vec3::form(0.0,1.0,0.0), vfov, aspect_ratio, aperture, dist_to_focus));
 
 
-    // //Materials
-    let m_ground = Arc::new(Lambertian::form(176.0/255.0,196.0/255.0,222.0/255.0,));
-    // // let m_center = Arc::new(Lambertian::form(0.7,0.3,0.3));
-    // // let m_left= Arc::new(Metal::form(0.8,0.8,0.8,0.3));
-    // let m_center = Arc::new(Dielectric::form(1.5));
-    // let m_left= Arc::new(Dielectric::form(1.5));
-    let m_left1= Arc::new(Dielectric::form(0.8));
-    // let m_right= Arc::new(Metal::form(0.8,0.6,0.2,1.0));
-    // let golden= Arc::new(Metal::form(0.1,1.0,0.0,1.0));
-
-    let mut objs:Vec<Arc<dyn Hittable>> = vec![];
     //World
     let mut world = HittableList::new();
-    world.add(Arc::new(Sphere::form(Point3::form(0.0,-100.5,-1.0),100.0,m_ground)));
-    // world.add(Arc::new(Sphere::form(Point3::form(0.0,0.0,-1.0),0.5,m_center)));
-    // world.add(Arc::new(Sphere::form(Point3::form(-1.0,0.0,-1.0),0.5,m_left)));
-    // objs.push(Arc::new(Sphere::form(Point3::form(5.0,0.0,5.0),-10.0,m_left1.clone())));
-    // objs.push(Arc::new(Sphere::form(Point3::form(1.0,0.0,-1.0),10.0,m_right.clone())));
-    // world.add(Arc::new(Triangle::form_x(Point3::form(0.0,1.0,-1.0),1.0,1.0,x)));
-
     //读取stl模型三角面
-    let mut stl = StlReader::new_stl_reader("cat.stl".to_string());
+    // let mut stl = StlReader::new_stl_reader("cat.stl".to_string());
 
-    let x= Arc::new(Metal::form(0.949,0.7529,0.3372,1.0));
-    stl.raed_all_shape_info(&mut objs,x,300.0);
+    // let x= Arc::new(Metal::form(0.949,0.7529,0.3372,0.3));
+    // stl.raed_all_shape_info(&mut objs,x,300.0);
     let bvh_node = BvhNode::form(objs.as_mut_slice(),0.0001,f64::MAX);
     println!("bvh树深度 {}",f32::log2(100.0));
     world.add(Arc::new(bvh_node.unwrap()));
     let world_arc = Arc::new(world);
-    //Camera
-    let lf = Point3::form(0.0,0.0,40.0);
-    let la = Vec3::form(0.0,15.0,-5.0);
-    let dist_to_focus = (lf-la).length();
-    let camera_arc = Arc::new(Camera::new(
-        lf, la, Vec3::form(0.0,1.0,0.0),45.0,aspect_ratio,2.0,dist_to_focus));
     let count = 10; //图形渲染线程数
     let (tx, rx) = mpsc::channel();
     for thread_n in  0 .. count{
@@ -179,7 +179,7 @@ fn main() {
                         let u = (i as f64 + rand_f64()) / (image_width -1) as f64;
                         let v = (((image_height - 1) - j)  as f64 + rand_f64()) / (image_height - 1) as f64 ;
                         let ray = camera_t.get_ray(u,v);
-                        pixel_color += ray_color(ray,world_t.borrow(),max_depth);
+                        pixel_color += ray_color(ray,&background,world_t.borrow(),max_depth);
                     }
                     write_color(file.borrow_mut(), pixel_color,samples_per_pixel);
                 }
