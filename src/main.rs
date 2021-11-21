@@ -131,7 +131,7 @@ fn main() {
             objs = cornell_box();
             aspect_ratio = 1.0;
             image_width = 800;
-            samples_per_pixel = 100;
+            samples_per_pixel = 10;
             background = Color::form(0.0,0.0,0.0);
             lookfrom = Point3::form(278.0, 278.0, -800.0);
             lookat = Point3::form(278.0, 278.0, 0.0);

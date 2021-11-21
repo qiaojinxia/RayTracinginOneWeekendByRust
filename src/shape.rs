@@ -409,3 +409,64 @@ impl Hittable for YzRect{
         }
     }
 }
+
+pub(crate) struct MBox{
+    box_min:Point3,
+    box_max:Point3,
+    sides:Vec<Arc<dyn Hittable>>
+}
+
+impl Debug for MBox {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        todo!()
+    }
+}
+
+impl MBox{
+    pub(crate) fn form(p0:Point3,p1:Point3,ma:Arc<dyn Materials>) -> Self{
+        if p0.x > p1.x || p0.y > p1.y || p0.z > p1.z {
+            panic!("定义点的顺序错误,应从小开始!")
+        }
+        let mut hittable_list:Vec<Arc<dyn Hittable>> = vec![];
+        hittable_list.push(Arc::new(XyRect::form(p0.x, p1.x, p0.y, p1.y, p1.z, ma.clone())));
+        hittable_list.push(Arc::new(XyRect::form(p0.x, p1.x, p0.y, p1.y, p0.z, ma.clone())));
+
+        hittable_list.push(Arc::new(XzRect::form(p0.x, p1.x, p0.z, p1.z, p1.y, ma.clone())));
+        hittable_list.push(Arc::new(XzRect::form(p0.x, p1.x, p0.z, p1.z, p0.y, ma.clone())));
+
+        hittable_list.push(Arc::new(YzRect::form(p0.y, p1.y, p0.z, p1.z, p1.x, ma.clone())));
+        hittable_list.push( Arc::new(YzRect::form(p0.y, p1.y, p0.z, p1.z, p0.x, ma.clone())));
+        Self{
+            box_min:p0,
+            box_max:p1,
+            sides:hittable_list,
+        }
+    }
+}
+
+impl Hittable for MBox{
+    fn hit(&self, ray: Ray, t_min: f64, t_max: f64, rec: &mut HitRecorder) -> bool {
+        let mut can_hit = false;
+        let mut max_t = t_max;
+        for objs in self.sides.iter(){
+            if objs.clone().hit(ray,t_min,max_t,rec){
+                max_t = rec.t;
+                can_hit = true;
+            }
+        }
+        can_hit
+    }
+
+    fn bounding_box(&self) -> Option<AABB> {
+        Some(AABB::form(self.box_min,self.box_max))
+    }
+
+    fn get_center_point(&self, a: &Axis) -> f64 {
+        let center_point =  self.box_min + (self.box_max  - self.box_min) / 2.0;
+            match a {
+                Axis::X => { center_point.x }
+                Axis::Y => { center_point.y}
+                Axis::Z => { center_point.z }
+            }
+    }
+}

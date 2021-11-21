@@ -3,7 +3,7 @@ use crate::hit::Hittable;
 use crate::common::{rand_f64, rand_range_f64};
 use crate::ray::Point3;
 use crate::Color;
-use crate::shape::{Sphere, XyRect, YzRect, XzRect};
+use crate::shape::{Sphere, XyRect, YzRect, XzRect, MBox};
 use crate::material::{Lambertian, Dielectric, Metal, Materials, DiffuseLight};
 use crate::texture::{CheckerTexture, NoiseTexture};
 
@@ -92,6 +92,10 @@ pub(crate) fn cornell_box() -> Vec<Arc<dyn Hittable>>{
     objs.push(Arc::new(XzRect::form(0.0, 555.0, 0.0, 555.0, 0.0, white.clone())));
     objs.push(Arc::new(XzRect::form(0.0, 555.0, 0.0, 555.0, 555.0, white.clone())));
     objs.push(Arc::new(XyRect::form(0.0, 555.0, 0.0, 555.0, 555.0, white.clone())));
+
+    objs.push(Arc::new(MBox::form(Point3::form(130.0, 0.0, 65.0), Point3::form(295.0, 165.0, 230.0), white.clone())));
+    objs.push(Arc::new(MBox::form(Point3::form(265.0, 0.0, 295.0), Point3::form(430.0, 330.0, 460.0), white.clone())));
+
 
     objs
 }
