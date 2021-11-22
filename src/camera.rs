@@ -31,8 +31,6 @@ impl Camera{
         let u = Vec3::unit_vector(Vec3::cross(vup,w));
         let v = Vec3::cross(w,u);
 
-
-
         let origin = lookfrom;
         let horizontal = u * (viewport_width * focus_dist);
         let vertical = v * (viewport_height * focus_dist);
@@ -56,3 +54,4 @@ impl Camera{
               self.horizontal * u + self.vertical * v - self.origin - offset)
     }
 }
+

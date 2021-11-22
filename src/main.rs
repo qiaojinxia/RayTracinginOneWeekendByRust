@@ -12,6 +12,7 @@ mod bvh;
 mod sort;
 mod texture;
 mod sences;
+mod macros;
 
 use std::fmt::{Display, Formatter};
 use crate::vec3::Vec3;
@@ -95,7 +96,7 @@ fn main() {
     match seneces {
         1 => {
             objs = random_scene();
-            lookfrom = Point3::form(13.0,2.0,3.0);
+            lookfrom = point3!(13,2,3);
             lookat = Point3::form(0.0,0.0,0.0);
             background= Color::form(0.70, 0.80, 1.00);
             vfov = 20.0;
@@ -128,9 +129,9 @@ fn main() {
             aspect_ratio = 1.0;
             image_width = 800;
             samples_per_pixel = 10;
-            background = Color::form(0.0,0.0,0.0);
-            lookfrom = Point3::form(278.0, 278.0, -800.0);
-            lookat = Point3::form(278.0, 278.0, 0.0);
+            background = point3!(0,0,0);
+            lookfrom =  point3!(278.0, 278.0, -800.0);
+            lookat =  point3!(278.0, 278.0, 0.0);
             vfov = 40.0;
         }
         _ => {}

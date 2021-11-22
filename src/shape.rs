@@ -4,9 +4,9 @@ use crate::hit::{Hittable, HitRecorder};
 use std::fmt::{Debug, Formatter};
 use std::sync::Arc;
 use crate::material::Materials;
-use crate::common::{cmp_f64, f64_near_zero, Axis, Tuple};
+use crate::common::{cmp_f64, f64_near_zero, Axis, Tuple, degrees_to_radians};
 use std::f64::consts::PI;
-
+use crate::{point3};
 
 pub(crate) struct Sphere{
     center:Point3,
@@ -468,5 +468,48 @@ impl Hittable for MBox{
                 Axis::Y => { center_point.y}
                 Axis::Z => { center_point.z }
             }
+    }
+}
+
+pub(crate) struct YRotate{
+    obj:Option<Arc<dyn Hittable>>,
+    sin_theta:f64,
+    cos_theta:f64,
+    has_box:bool,
+    aabb:AABB,
+}
+
+impl Debug for YRotate {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        todo!()
+    }
+}
+
+impl Hittable for YRotate {
+    fn hit(&self, _ray: Ray, _t_min: f64, _t_max: f64, _rec: &mut HitRecorder) -> bool {
+        todo!()
+    }
+
+    fn bounding_box(&self) -> Option<AABB> {
+       self.bounding_box()
+    }
+
+    fn get_center_point(&self, a: &Axis) -> f64 {
+        todo!()
+    }
+}
+
+impl YRotate{
+    pub(crate) fn form(p:Arc<dyn Hittable>,angle:f64){
+        let radians = degrees_to_radians(angle);
+        let sin_theta = radians.sin();
+        let cos_theta = radians.cos();
+        let has_box;
+        match p.bounding_box(){
+            None => { has_box = false}
+            Some(_) => { has_box = true }
+        }
+        let min = point3!(0,1,2);
+
     }
 }
