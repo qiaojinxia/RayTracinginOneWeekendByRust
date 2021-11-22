@@ -72,7 +72,7 @@ impl Hittable for Sphere{
     }
 
     fn bounding_box(&self) -> Option<AABB> {
-        let r = Point3::form(self.radius,self.radius,self.radius);
+        let r = point3!(self.radius,self.radius,self.radius);
             Some(AABB::form(
                 self.center - r,
                 self.center + r,
@@ -104,9 +104,9 @@ impl Triangle{
         }
     }
     pub(crate) fn form_by_center(center:Point3, height:f64,weight:f64,material:Arc<dyn Materials>) -> Self{
-        let p1 = Point3::form( center.x,center.y + height / 2.0,center.z);
-        let p2 = Point3::form(center.x - weight/2.0,center.y - height / 2.0,center.z);
-        let p3 = Point3::form(center.x + weight/2.0,center.y - height / 2.0,center.z);
+        let p1 = point3!( center.x,center.y + height / 2.0,center.z);
+        let p2 = point3!(center.x - weight/2.0,center.y - height / 2.0,center.z);
+        let p3 = point3!(center.x + weight/2.0,center.y - height / 2.0,center.z);
         Self{
             p1,
             p2,
@@ -204,7 +204,7 @@ impl Debug for AABB {
 
 impl AABB{
     pub(crate) fn hit(&self, ray: Ray, t_min: f64, t_max: f64, _rec: &mut HitRecorder) -> bool {
-        let inv_d = Point3::form(1.0 / ray.direction().x,1.0 / ray.direction().y,1.0 / ray.direction().z);
+        let inv_d = point3!(1.0 / ray.direction().x,1.0 / ray.direction().y,1.0 / ray.direction().z);
         let t_in = (self.minimum - ray.origin()) * inv_d;
         let t_out=(self.maximum - ray.origin()) * inv_d;
         let min_t = Vec3::min(t_in,t_out);
@@ -268,8 +268,8 @@ impl Hittable for XyRect{
     }
 
     fn bounding_box(&self) -> Option<AABB> {
-        Some(AABB::form(Point3::form(self.x0,self.y0, self.k-0.0001),
-                        Point3::form(self.x1, self.y1, self.k+0.0001)))
+        Some(AABB::form(point3!(self.x0,self.y0, self.k-0.0001),
+                        point3!(self.x1, self.y1, self.k+0.0001)))
     }
 
     fn get_center_point(&self, a: &Axis) -> f64 {
@@ -332,8 +332,8 @@ impl Hittable for XzRect{
     }
 
     fn bounding_box(&self) -> Option<AABB> {
-        Some(AABB::form(Point3::form(self.x0, self.k - 0.1001, self.z0),
-                        Point3::form(self.x1, self.k + 0.1001, self.z1)))
+        Some(AABB::form(point3!(self.x0, self.k - 0.1001, self.z0),
+                        point3!(self.x1, self.k + 0.1001, self.z1)))
     }
 
     fn get_center_point(&self, a: &Axis) -> f64 {
@@ -397,8 +397,8 @@ impl Hittable for YzRect{
     }
 
     fn bounding_box(&self) -> Option<AABB> {
-        Some(AABB::form(Point3::form(self.k - 0.0001, self.y0, self.z0),
-                        Point3::form(self.k + 0.0001, self.y1, self.z1)))
+        Some(AABB::form(point3!(self.k - 0.0001, self.y0, self.z0),
+                        point3!(self.k + 0.0001, self.y1, self.z1)))
     }
 
     fn get_center_point(&self, a: &Axis) -> f64 {
@@ -480,7 +480,7 @@ pub(crate) struct YRotate{
 }
 
 impl Debug for YRotate {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, _f: &mut Formatter<'_>) -> std::fmt::Result {
         todo!()
     }
 }
@@ -494,7 +494,7 @@ impl Hittable for YRotate {
        self.bounding_box()
     }
 
-    fn get_center_point(&self, a: &Axis) -> f64 {
+    fn get_center_point(&self, _a: &Axis) -> f64 {
         todo!()
     }
 }

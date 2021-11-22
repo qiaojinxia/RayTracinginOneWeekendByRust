@@ -28,9 +28,7 @@ use crate::common::{rand_f64, clamp};
 use crate::bvh::BvhNode;
 use std::time::Instant;
 use crate::sences::{two_spheres, random_scene, two_perlin_spheres, simple_light, cornell_box};
-
 type Color = Vec3;
-
 
 
 impl Display for Color{
@@ -86,7 +84,7 @@ fn main() {
     let mut aperture = 0.0;
     let seneces = 6;
     let mut objs = vec![];
-    let mut background= Color::form(0.0,0.0,0.0);
+    let mut background= color3!(0.0,0.0,0.0);
 
     //Image
     let mut image_width = 400;
@@ -97,31 +95,31 @@ fn main() {
         1 => {
             objs = random_scene();
             lookfrom = point3!(13,2,3);
-            lookat = Point3::form(0.0,0.0,0.0);
-            background= Color::form(0.70, 0.80, 1.00);
+            lookat = point3!(0.0,0.0,0.0);
+            background= color3!(0.70, 0.80, 1.00);
             vfov = 20.0;
             aperture = 0.1;
         }
         2 => {
             objs = two_spheres();
-            lookfrom = Point3::form(13.0,2.0,3.0);
-            lookat = Point3::form(0.0,0.0,0.0);
-            background= Color::form(0.70, 0.80, 1.00);
+            lookfrom = point3!(13.0,2.0,3.0);
+            lookat = point3!(0.0,0.0,0.0);
+            background= color3!(0.70, 0.80, 1.00);
             vfov = 20.0;
         }
         3 =>{
             objs = two_perlin_spheres();
-            lookfrom = Point3::form(13.0,2.0,3.0);
-            lookat = Point3::form(0.0,0.0,0.0);
-            background= Color::form(0.70, 0.80, 1.00);
+            lookfrom = point3!(13.0,2.0,3.0);
+            lookat = point3!(0.0,0.0,0.0);
+            background= color3!(0.70, 0.80, 1.00);
             vfov = 20.0;
         }
         5 =>{
-            background= Color::form(0.0, 0.0, 0.0);
+            background= color3!(0.0, 0.0, 0.0);
             objs = simple_light();
             samples_per_pixel = 400;
-            lookfrom = Point3::form(26.0,3.0,6.0);
-            lookat = Point3::form(0.0,2.0,0.0);
+            lookfrom = point3!(26.0,3.0,6.0);
+            lookat = point3!(0.0,2.0,0.0);
             vfov = 20.0;
         }
         6 =>{

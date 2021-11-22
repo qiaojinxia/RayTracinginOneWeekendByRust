@@ -3,10 +3,10 @@ use std::convert::TryFrom;
 use std::cmp::Ordering;
 use std::cmp::Ordering::{Less, Equal, Greater};
 use crate::shape::AABB;
-use crate::ray::Point3;
 use crate::vec3::Vec3;
 use std::f64::consts::PI;
-
+use crate::{point3};
+use crate::ray::Point3;
 
 pub enum Tuple{
     UV(f64,f64)
@@ -108,7 +108,7 @@ pub(crate) fn surrounding_box(a:AABB,b:AABB) -> Option<AABB>{
     let max_x = f64::max(a.maximum.x,b.maximum.x);
     let max_y = f64::max(a.maximum.y,b.maximum.y);
     let max_z = f64::max(a.maximum.z,b.maximum.z);
-    Some(AABB::form(Point3::form(min_x,min_y,min_z),Point3::form(max_x,max_y,max_z)))
+    Some(AABB::form(point3!(min_x,min_y,min_z),point3!(max_x,max_y,max_z)))
 }
 
 
@@ -165,7 +165,7 @@ impl Perlin{
         for i in 0..2{
             for j in 0..2{
                 for k in 0..2{
-                    let weight_v = Point3::form(u-i  as f64,v-j as f64,w-k as f64);
+                    let weight_v = point3!(u-i  as f64,v-j as f64,w-k as f64);
                     accum += (i as f64 *uu + (1-i) as f64 *(1.0-uu))*
                         (j as f64 * vv + (1-j) as f64 *(1.0-vv))*
                         (k as f64 * ww + (1-k) as f64 *(1.0 -ww)) * Vec3::dot(c[i][j][k],weight_v);
