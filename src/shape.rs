@@ -476,7 +476,7 @@ pub(crate) struct YRotate{
     sin_theta:f64,
     cos_theta:f64,
     has_box:bool,
-    aabb:AABB,
+    aabb:Option<AABB>,
 }
 
 impl Debug for YRotate {
@@ -485,31 +485,80 @@ impl Debug for YRotate {
     }
 }
 
-impl Hittable for YRotate {
-    fn hit(&self, _ray: Ray, _t_min: f64, _t_max: f64, _rec: &mut HitRecorder) -> bool {
-        todo!()
-    }
 
-    fn bounding_box(&self) -> Option<AABB> {
-       self.bounding_box()
-    }
+impl YRotate{
+    pub(crate) fn form(p:Arc<dyn Hittable>,angle:f64) -> Self{
+        let radians = degrees_to_radians(angle);
+        let mut after_rotate_obj = Self{
+            obj: Some(p.clone()),
+            sin_theta: radians.sin(),
+            cos_theta: radians.cos(),
+            has_box:false,
+            aabb:None,
+        };
+        match p.bounding_box(){
+            None => { }
+            Some(aabb) => {
+                let p0 = aabb.minimum;
+                let p1 = aabb.maximum;
+                let mut points = vec![];
 
-    fn get_center_point(&self, _a: &Axis) -> f64 {
-        todo!()
+
+                points.push(point3!(p0.x, p1.y, p0.z));
+                points.push(point3!(p0.x, p1.y, p1.z));
+                points.push(point3!(p0.x, p0.y, p1.z));
+
+                points.push(point3!(p1.x, p0.y, p1.z));
+                points.push(point3!(p1.x, p0.x, p0.z));
+                points.push(point3!(p1.x, p1.y, p0.z));
+
+                let mut min = Vec3::min(p0,p1);
+                let mut max = Vec3::max(p0,p1);
+
+                for i in points.iter(){
+                    min = Vec3::min(min,Vec3::rotate_y(*i,after_rotate_obj.sin_theta,after_rotate_obj.cos_theta));
+                    max = Vec3::max(max,Vec3::rotate_y(*i,after_rotate_obj.sin_theta,after_rotate_obj.cos_theta));
+                }
+                after_rotate_obj.has_box = true;
+                after_rotate_obj.aabb = Some(AABB::form(min,max))
+
+            }
+        }
+        after_rotate_obj
     }
 }
 
-impl YRotate{
-    pub(crate) fn form(p:Arc<dyn Hittable>,angle:f64){
-        let radians = degrees_to_radians(angle);
-        let sin_theta = radians.sin();
-        let cos_theta = radians.cos();
-        let has_box;
-        match p.bounding_box(){
-            None => { has_box = false}
-            Some(_) => { has_box = true }
-        }
-        let min = point3!(0,1,2);
 
+impl Hittable for YRotate{
+    fn hit(&self, ray: Ray, t_min: f64, t_max: f64, rec: &mut HitRecorder) -> bool {
+        let origin = ray.origin();
+        let direction = ray.direction();
+        let new_origin = Vec3::rotate_y(origin,self.sin_theta,self.cos_theta);
+        let new_dir = Vec3::rotate_y(direction,self.sin_theta,self.cos_theta);
+        let rotated_ray = Ray::form(new_origin,new_dir);
+        if !self.obj.clone().unwrap().hit(rotated_ray,t_min,t_max,rec) {
+            return false;
+        }
+        let p = rec.p.unwrap();
+        let normal = rec.normal.unwrap();
+
+        let rotated_p = Vec3::rotate_y(p,self.sin_theta,self.cos_theta);
+        let rotated_normal = Vec3::rotate_y(normal,self.sin_theta,self.cos_theta);
+        rec.p = Some(rotated_p);
+        rec.set_face_normal(rotated_ray, rotated_normal);
+        true
+    }
+
+    fn bounding_box(&self) -> Option<AABB> {
+        self.aabb
+    }
+
+    fn get_center_point(&self, a: &Axis) -> f64 {
+        let center = self.aabb.unwrap().minimum + (self.aabb.unwrap().maximum - self.aabb.unwrap().minimum) / 2.0;
+        match a {
+            Axis::X => { center.x}
+            Axis::Y => { center.y}
+            Axis::Z => { center.z}
+        }
     }
 }

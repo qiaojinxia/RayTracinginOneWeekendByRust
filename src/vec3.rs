@@ -231,10 +231,12 @@ impl Vec3{
 
     }
 
-    pub(crate) fn rotate_x(v1:Vec3,degree:f64) -> Self{
+    pub(crate) fn rotate_x(v1:Vec3,radians:f64) -> Self{
+        let sin_theta = radians.sin();
+        let cos_theta = radians.cos();
         let r1 = Vec3::form(1.0,0.0,0.0);
-        let r2 = Vec3::form(0.0,degree.cos(),-degree.sin());
-        let r3 = Vec3::form(0.0,degree.sin(),degree.cos());
+        let r2 = Vec3::form(0.0,cos_theta,-sin_theta);
+        let r3 = Vec3::form(0.0,sin_theta,cos_theta);
         let x = Vec3::dot(r1 ,v1);
         let y = Vec3::dot(r2 ,v1);
         let z = Vec3::dot(r3 ,v1);
@@ -244,4 +246,35 @@ impl Vec3{
             z
         }
     }
+
+    pub(crate) fn rotate_y(v1:Vec3,sin_theta:f64,cos_theta:f64) -> Self{
+        let r1 = Vec3::form(cos_theta,0.0,sin_theta);
+        let r2 = Vec3::form(0.0,1.0,0.0);
+        let r3 = Vec3::form(-sin_theta,0.0,cos_theta);
+        let x = Vec3::dot(r1 ,v1);
+        let y = Vec3::dot(r2 ,v1);
+        let z = Vec3::dot(r3 ,v1);
+        Self{
+            x,
+            y,
+            z
+        }
+    }
+
+    pub(crate) fn rotate_z(v1:Vec3,radians:f64) -> Self{
+        let sin_theta = radians.sin();
+        let cos_theta = radians.cos();
+        let r1 = Vec3::form(cos_theta,0.0,-sin_theta);
+        let r2 = Vec3::form(0.0,1.0,0.0);
+        let r3 = Vec3::form(sin_theta,0.0,cos_theta);
+        let x = Vec3::dot(r1 ,v1);
+        let y = Vec3::dot(r2 ,v1);
+        let z = Vec3::dot(r3 ,v1);
+        Self{
+            x,
+            y,
+            z
+        }
+    }
+
 }

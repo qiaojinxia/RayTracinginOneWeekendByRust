@@ -3,7 +3,7 @@ use crate::hit::Hittable;
 use crate::common::{rand_f64, rand_range_f64};
 use crate::{point3};
 use crate::Color;
-use crate::shape::{Sphere, XyRect, YzRect, XzRect, MBox};
+use crate::shape::{Sphere, XyRect, YzRect, XzRect, MBox, YRotate};
 use crate::material::{Lambertian, Dielectric, Metal, Materials, DiffuseLight};
 use crate::texture::{CheckerTexture, NoiseTexture};
 use crate::ray::Point3;
@@ -94,8 +94,16 @@ pub(crate) fn cornell_box() -> Vec<Arc<dyn Hittable>>{
     objs.push(Arc::new(XzRect::form(0.0, 555.0, 0.0, 555.0, 555.0, white.clone())));
     objs.push(Arc::new(XyRect::form(0.0, 555.0, 0.0, 555.0, 555.0, white.clone())));
 
-    objs.push(Arc::new(MBox::form(point3!(130.0, 0.0, 65.0), point3!(295.0, 165.0, 230.0), white.clone())));
-    objs.push(Arc::new(MBox::form(point3!(265.0, 0.0, 295.0), point3!(430.0, 330.0, 460.0), white.clone())));
+    // objs.push(Arc::new(MBox::form(point3!(130.0, 0.0, 65.0), point3!(295.0, 165.0, 230.0), white.clone())));
+    // objs.push(Arc::new(MBox::form(point3!(265.0, 0.0, 295.0), point3!(430.0, 330.0, 460.0), white.clone())));
+
+
+    let box1 = Arc::new(MBox::form(point3!(0, 0, 0), point3!(165, 330, 165), white));
+    let ro_box1 = Arc::new(YRotate::form(box1,30.0));
+
+
+    objs.push(ro_box1);
+
 
 
     objs

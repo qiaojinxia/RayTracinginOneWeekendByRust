@@ -96,7 +96,7 @@ fn main() {
             objs = random_scene();
             lookfrom = point3!(13,2,3);
             lookat = point3!(0,0,0);
-            background= color3!(0.70, 0.80, 1.00);
+            background= color3!(0.7, 0.8, 1);
             vfov = 20.0;
             aperture = 0.1;
         }
@@ -104,14 +104,14 @@ fn main() {
             objs = two_spheres();
             lookfrom = point3!(13,2,3);
             lookat = point3!(0,0,0);
-            background= color3!(0.70, 0.80, 1);
+            background= color3!(0.7, 0.8, 1);
             vfov = 20.0;
         }
         3 =>{
             objs = two_perlin_spheres();
-            lookfrom = point3!(13.0,2.0,3.0);
+            lookfrom = point3!(13,2,3);
             lookat = point3!(0,0,0);
-            background= color3!(0.7, 0.8, 1);
+            background= color3!(0.7, 0, 1);
             vfov = 20.0;
         }
         5 =>{
@@ -128,8 +128,8 @@ fn main() {
             image_width = 800;
             samples_per_pixel = 10;
             background = point3!(0,0,0);
-            lookfrom =  point3!(278.0, 278.0, -800.0);
-            lookat =  point3!(278.0, 278.0, 0.0);
+            lookfrom =  point3!(278, 278, -800);
+            lookat =  point3!(278, 278, 0);
             vfov = 40.0;
         }
         _ => {}
