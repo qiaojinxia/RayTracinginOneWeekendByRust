@@ -45,7 +45,7 @@ impl Materials for Lambertian{
         self.albedo.clone().unwrap().value(rec.u, rec.v, &rec.p.unwrap())
     }
 
-    fn emitted(&self,u: f64, v: f64, p: Point3) -> Color {
+    fn emitted(&self,_u: f64, _v: f64, _p: Point3) -> Color {
         Color::new()
     }
 }
@@ -91,7 +91,7 @@ impl Materials for Metal{
         self.albedo
     }
 
-    fn emitted(&self,u: f64, v: f64, p: Point3) -> Color {
+    fn emitted(&self,_u: f64, _v: f64, _p: Point3) -> Color {
         Color::new()
     }
 }
@@ -135,7 +135,7 @@ impl Materials for Dielectric{
         Color::form(1.0,1.0,1.0)
     }
 
-    fn emitted(&self,u: f64, v: f64, p: Point3) -> Color {
+    fn emitted(&self,_u: f64, _v: f64, _p: Point3) -> Color {
         todo!()
     }
 }
@@ -161,11 +161,11 @@ impl DiffuseLight{
     }
 }
 impl Materials for DiffuseLight{
-    fn scatter(&self, ray_in: &Ray, rec: &mut HitRecorder) -> Option<Ray> {
+    fn scatter(&self, _ray_in: &Ray, _rec: &mut HitRecorder) -> Option<Ray> {
         None
     }
 
-    fn get_color(&self, r: &HitRecorder) -> Color {
+    fn get_color(&self, _r: &HitRecorder) -> Color {
         Color::new()
     }
 

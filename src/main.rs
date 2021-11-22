@@ -19,17 +19,13 @@ use std::{ thread};
 use crate::draw::write_color;
 use std::borrow::{BorrowMut, Borrow};
 use crate::ray::{Point3, Ray};
-use crate::shape::{Sphere};
 use crate::hit::{HitRecorder, Hittable};
 use crate::hittable_list::HittableList;
 use std::sync::{Arc, mpsc};
 use crate::camera::Camera;
-use crate::common::{rand_f64, clamp, rand_range_f64};
-use crate::material::{Lambertian, Metal, Dielectric, Materials};
-use crate::stl_reader::StlReader;
+use crate::common::{rand_f64, clamp};
 use crate::bvh::BvhNode;
 use std::time::Instant;
-use crate::texture::CheckerTexture;
 use crate::sences::{two_spheres, random_scene, two_perlin_spheres, simple_light, cornell_box};
 
 type Color = Vec3;

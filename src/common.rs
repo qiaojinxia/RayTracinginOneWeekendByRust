@@ -29,7 +29,6 @@ impl Axis{
             Axis::X => {vec.x}
             Axis::Y => {vec.y}
             Axis::Z => {vec.z}
-            _ => {panic!("错误的轴!")}
         }
     }
 

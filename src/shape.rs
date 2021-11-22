@@ -225,17 +225,17 @@ pub(crate) struct XyRect{
     y0:f64,
     y1:f64,
     k:f64,
-    mp:Option<Arc<Materials>>,
+    mp:Option<Arc<dyn Materials>>,
 }
 
 impl Debug for XyRect {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, _f: &mut Formatter<'_>) -> std::fmt::Result {
         todo!()
     }
 }
 
 impl XyRect{
-    pub(crate) fn form(x0:f64,x1:f64,y0:f64,y1:f64,k:f64,ma:Arc<Materials>) -> Self{
+    pub(crate) fn form(x0:f64,x1:f64,y0:f64,y1:f64,k:f64,ma:Arc<dyn Materials>) -> Self{
         Self{
             x0:x0.min(x1),
             x1:x0.max(x1),
@@ -288,11 +288,11 @@ pub(crate) struct XzRect{
     z0:f64,
     z1:f64,
     k:f64,
-    mp:Option<Arc<Materials>>,
+    mp:Option<Arc<dyn Materials>>,
 }
 
 impl XzRect{
-    pub(crate) fn form(x0:f64,x1:f64,z0:f64,z1:f64,k:f64,ma:Arc<Materials>) -> Self{
+    pub(crate) fn form(x0:f64,x1:f64,z0:f64,z1:f64,k:f64,ma:Arc<dyn Materials>) -> Self{
         Self{
             x0:x0.min(x1),
             x1:x0.max(x1),
@@ -305,7 +305,7 @@ impl XzRect{
 }
 
 impl Debug for XzRect {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, _f: &mut Formatter<'_>) -> std::fmt::Result {
         todo!()
     }
 }
@@ -352,12 +352,12 @@ pub(crate) struct YzRect{
     z0:f64,
     z1:f64,
     k:f64,
-    mp:Option<Arc<Materials>>,
+    mp:Option<Arc<dyn Materials>>,
 }
 
 
 impl YzRect{
-    pub(crate) fn form(y0:f64,y1:f64,z0:f64,z1:f64,k:f64,ma:Arc<Materials>) -> Self{
+    pub(crate) fn form(y0:f64,y1:f64,z0:f64,z1:f64,k:f64,ma:Arc<dyn Materials>) -> Self{
         Self{
             y0:y0.min(y1),
             y1:y0.max(y1),
@@ -370,7 +370,7 @@ impl YzRect{
 }
 
 impl Debug for YzRect {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, _f: &mut Formatter<'_>) -> std::fmt::Result {
         todo!()
     }
 }
@@ -417,7 +417,7 @@ pub(crate) struct MBox{
 }
 
 impl Debug for MBox {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, _f: &mut Formatter<'_>) -> std::fmt::Result {
         todo!()
     }
 }
