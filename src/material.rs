@@ -1,14 +1,16 @@
-use crate::ray::Ray;
+use crate::ray::{Ray, Point3};
 use crate::hit::HitRecorder;
 use crate::Color;
 use crate::vec3::Vec3;
 use crate::common::rand_f64;
 use std::sync::Arc;
+use crate::texture::{SolidColor, Texture};
 
 
 pub(crate) trait Materials:Send + Sync{
-    fn scatter(&self,ray_in:&Ray,rec:HitRecorder) -> Option<Ray>;
-    fn get_color(&self) -> Color;
+    fn scatter(&self,ray_in:&Ray,rec:&mut HitRecorder) -> Option<Ray>;
+    fn get_color(&self,r:&HitRecorder) -> Color;
+    fn emitted(&self,u:f64,v:f64,p:Point3) -> Color;
 }
 
 pub(crate) struct Lambertian{
@@ -16,25 +18,35 @@ pub(crate) struct Lambertian{
 }
 
 impl Lambertian{
-    pub(crate) fn form(a:Option<Arc<dyn Texture>>) -> Lambertian{
+    pub(crate) fn form(t:Arc<dyn Texture>) -> Lambertian{
         Self{
-            albedo: a,
+            albedo: Some(t),
+        }
+    }
+
+    pub(crate) fn form_color(r:f64,g:f64,b:f64) -> Lambertian{
+        Self{
+            albedo: Some(Arc::new(SolidColor::form(r,g,b))),
         }
     }
 }
 
 impl Materials for Lambertian{
-    fn scatter(&self, _ray_in: &Ray, rec: HitRecorder) -> Option<Ray> {
+    fn scatter(&self, _ray_in: &Ray, rec:&mut HitRecorder) -> Option<Ray> {
         let mut scatter_direction = rec.normal.unwrap() + Vec3::random_unit_vector();
         if scatter_direction.near_zero(){
             scatter_direction = rec.normal.unwrap();
         }
-
         return Some(Ray::form(rec.p.unwrap(), scatter_direction))
+
     }
 
-    fn get_color(&self) -> Arc<dyn Texture> {
-        self.albedo.unwrap().clone()
+    fn get_color(&self,rec:&HitRecorder) -> Color {
+        self.albedo.clone().unwrap().value(rec.u, rec.v, &rec.p.unwrap())
+    }
+
+    fn emitted(&self,u: f64, v: f64, p: Point3) -> Color {
+        Color::new()
     }
 }
 
@@ -65,7 +77,7 @@ impl Metal{
     }
 }
 impl Materials for Metal{
-    fn scatter(&self, ray_in: &Ray, rec: HitRecorder) -> Option<Ray> {
+    fn scatter(&self, ray_in: &Ray, rec: &mut HitRecorder) -> Option<Ray> {
         let reflected = Vec3::reflect(ray_in.direction().unit_vector(),rec.normal.unwrap());
         let scattered = Ray::form(rec.p.unwrap(), reflected + Vec3::random_in_unit_sphere() * self.fuzz  );
         let x = Vec3::dot(scattered.direction(),rec.normal.unwrap());
@@ -75,8 +87,12 @@ impl Materials for Metal{
         None
     }
 
-    fn get_color(&self) -> Color {
+    fn get_color(&self,_rec:&HitRecorder) -> Color {
         self.albedo
+    }
+
+    fn emitted(&self,u: f64, v: f64, p: Point3) -> Color {
+        Color::new()
     }
 }
 
@@ -93,7 +109,7 @@ impl Dielectric{
 }
 
 impl Materials for Dielectric{
-    fn scatter(&self, ray_in: &Ray, rec: HitRecorder) -> Option<Ray> {
+    fn scatter(&self, ray_in: &Ray, rec: &mut HitRecorder) -> Option<Ray> {
        let mut refraction_ratio = self.ir;
        if rec.front_face {
            refraction_ratio = 1.0 / self.ir
@@ -115,8 +131,12 @@ impl Materials for Dielectric{
         Some(Ray::form(rec.p.unwrap(),direction))
     }
 
-    fn get_color(&self) -> Color {
+    fn get_color(&self,_rec:&HitRecorder) -> Color {
         Color::form(1.0,1.0,1.0)
+    }
+
+    fn emitted(&self,u: f64, v: f64, p: Point3) -> Color {
+        todo!()
     }
 }
 
@@ -125,5 +145,31 @@ impl Dielectric{
         let mut r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
         r0 = r0 * r0;
         return r0 + (1.0 - r0) * (1.0 - cosine).powi(5);
+    }
+}
+
+
+pub(crate) struct DiffuseLight {
+    emit:Option<Arc<dyn Texture>>,
+}
+
+impl DiffuseLight{
+    pub(crate) fn form(c:Color) -> Self{
+        Self{
+            emit: Some(Arc::new(SolidColor::form_color(c)))
+        }
+    }
+}
+impl Materials for DiffuseLight{
+    fn scatter(&self, ray_in: &Ray, rec: &mut HitRecorder) -> Option<Ray> {
+        None
+    }
+
+    fn get_color(&self, r: &HitRecorder) -> Color {
+        Color::new()
+    }
+
+    fn emitted(&self,u: f64, v: f64, p: Point3) -> Color {
+        self.emit.clone().unwrap().value(u,v,&p)
     }
 }
