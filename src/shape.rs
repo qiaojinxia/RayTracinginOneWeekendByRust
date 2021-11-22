@@ -503,13 +503,12 @@ impl YRotate{
                 let p1 = aabb.maximum;
                 let mut points = vec![];
 
-
                 points.push(point3!(p0.x, p1.y, p0.z));
                 points.push(point3!(p0.x, p1.y, p1.z));
                 points.push(point3!(p0.x, p0.y, p1.z));
 
                 points.push(point3!(p1.x, p0.y, p1.z));
-                points.push(point3!(p1.x, p0.x, p0.z));
+                points.push(point3!(p1.x, p0.y, p0.z));
                 points.push(point3!(p1.x, p1.y, p0.z));
 
                 let mut min = Vec3::min(p0,p1);
