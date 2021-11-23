@@ -24,10 +24,12 @@ use crate::hit::{HitRecorder, Hittable};
 use crate::hittable_list::HittableList;
 use std::sync::{Arc, mpsc};
 use crate::camera::Camera;
-use crate::common::{rand_f64, clamp};
+use crate::common::{rand_f64, clamp, rand_range_f64, except};
 use crate::bvh::BvhNode;
 use std::time::Instant;
 use crate::sences::{two_spheres, random_scene, two_perlin_spheres, simple_light, cornell_box};
+use std::f64::consts::PI;
+
 type Color = Vec3;
 
 
@@ -55,29 +57,31 @@ fn ray_color(ray:Ray,background:&Color,world:&HittableList,depth:i32) -> Color{
     if depth <= 0 {
         return Color::set(0.0,0.0,0.0);
     }
+    if rand_range_f64(0.0,1.0) > 0.8{
+        return Color::set(0.0,0.0,0.0);
+    }
     if world.hit(ray, 0.0001, f64::MAX, rec.borrow_mut()){
         let ray = rec.material.clone().unwrap().scatter(&ray, &mut rec);
         let emitted= rec.material.clone().unwrap().emitted(rec.u,rec.v,rec.p.unwrap());
         return match ray {
             Some(scattered) => {
                 let attenuation = rec.material.clone().unwrap().get_color(&rec);
-
                 //兰伯特定律
-                let cos_theta = rec.normal.unwrap() * ray.unwrap().direction();
+                let cos_theta = Vec3::dot(rec.normal.unwrap() ,ray.unwrap().direction());
                 // //辐射率
                 // let radiance = ray.unwrap().direction() * rec.p.unwrap();
                 //蒙特卡洛积分
-
-                emitted + attenuation * ray_color(scattered, background,world, depth - 1) * cos_theta
+                let pbf =  0.5 / PI;
+                //自发光 + fr
+                emitted + attenuation * rec.material.clone().unwrap().
+                    scattering_pdf(ray.unwrap().borrow(),rec.borrow(),scattered.borrow()) *
+                    ray_color(scattered, background,world, depth - 1) * cos_theta / pbf / 0.8
             }
-                None => emitted
+            None => {
+                emitted
+            }
         }
-        // let target = rec.p.unwrap() + Vec3::random_in_hemisphere(rec.normal.unwrap());
-        // return ray_color(Ray::form(rec.p.unwrap(),target- rec.p.unwrap()),world.borrow(),depth-1) * 0.5;
     }
-    // let unit_direction = ray.direction().unit_vector();
-    // let t = 0.5 * (unit_direction.y + 1.0);
-    // Color::set(1.0,1.0,1.0) * (1.0 - t ) + Color::set(0.5,0.7,1.0) * t
     *background
 }
 
@@ -132,8 +136,8 @@ fn main() {
         6 =>{
             objs = cornell_box();
             aspect_ratio = 1.0;
-            image_width = 800;
-            samples_per_pixel = 40;
+            image_width = 500;
+            samples_per_pixel = 1000;
             background = point3!(0,0,0);
             lookfrom =  point3!(278, 278, -800);
             lookat =  point3!(278, 278, 0);
@@ -142,7 +146,7 @@ fn main() {
         _ => {}
     }
     let image_height = (image_width as f64 / aspect_ratio) as i32;
-    let max_depth = 50;
+    let max_depth = 200;
     let dist_to_focus = 10.0;
     //Camera
     let camera_arc = Arc::new(Camera::new(

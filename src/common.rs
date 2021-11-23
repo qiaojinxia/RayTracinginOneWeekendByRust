@@ -8,6 +8,7 @@ use std::f64::consts::PI;
 use crate::{point3};
 use crate::ray::Point3;
 
+
 pub enum Tuple{
     UV(f64,f64)
 }
@@ -197,4 +198,10 @@ impl Perlin{
             p[target as usize] = tmp;
         }
     }
+}
+
+
+
+pub(crate) fn except(n:i32, p:f64) -> f64{
+    n as f64 * (1.0 - p) * p.powi(n-1)
 }

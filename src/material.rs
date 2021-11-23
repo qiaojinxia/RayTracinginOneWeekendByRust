@@ -5,10 +5,12 @@ use crate::vec3::Vec3;
 use crate::common::rand_f64;
 use std::sync::Arc;
 use crate::texture::{SolidColor, Texture};
+use std::f64::consts::PI;
 
 
 pub(crate) trait Materials:Send + Sync{
     fn scatter(&self,ray_in:&Ray,rec:&mut HitRecorder) -> Option<Ray>;
+    fn scattering_pdf(&self,r_in:&Ray,rec:&HitRecorder,scattered:&Ray) -> f64;
     fn get_color(&self,r:&HitRecorder) -> Color;
     fn emitted(&self,u:f64,v:f64,p:Point3) -> Color;
 }
@@ -41,12 +43,21 @@ impl Materials for Lambertian{
 
     }
 
+    fn scattering_pdf(&self,r_in: &Ray, rec: &HitRecorder, scattered: &Ray) -> f64 {
+        //计算辐射量 单位能量 / 单位面积
+        let cos_theta = Vec3::dot(rec.normal.unwrap(), scattered.direction().unit_vector());
+        if cos_theta < 0.0 {
+            return 0.0
+        }
+        return cos_theta / PI
+    }
+
     fn get_color(&self,rec:&HitRecorder) -> Color {
         self.albedo.clone().unwrap().value(rec.u, rec.v, &rec.p.unwrap())
     }
 
     fn emitted(&self,_u: f64, _v: f64, _p: Point3) -> Color {
-        Color::new()
+        Color::set(0.0,0.0,0.0)
     }
 }
 
@@ -85,6 +96,10 @@ impl Materials for Metal{
            return Some(scattered);
         }
         None
+    }
+
+    fn scattering_pdf(&self,r_in: &Ray, rec: &HitRecorder, scattered: &Ray) -> f64 {
+        todo!()
     }
 
     fn get_color(&self,_rec:&HitRecorder) -> Color {
@@ -131,6 +146,10 @@ impl Materials for Dielectric{
         Some(Ray::form(rec.p.unwrap(),direction))
     }
 
+    fn scattering_pdf(&self,r_in: &Ray, rec: &HitRecorder, scattered: &Ray) -> f64 {
+        todo!()
+    }
+
     fn get_color(&self,_rec:&HitRecorder) -> Color {
         Color::form(1.0,1.0,1.0)
     }
@@ -163,6 +182,10 @@ impl DiffuseLight{
 impl Materials for DiffuseLight{
     fn scatter(&self, _ray_in: &Ray, _rec: &mut HitRecorder) -> Option<Ray> {
         None
+    }
+
+    fn scattering_pdf(&self,r_in: &Ray, rec: &HitRecorder, scattered: &Ray) -> f64 {
+        todo!()
     }
 
     fn get_color(&self, _r: &HitRecorder) -> Color {
