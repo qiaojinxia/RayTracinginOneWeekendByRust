@@ -1,9 +1,9 @@
 use std::sync::Arc;
 use crate::hit::Hittable;
 use crate::common::{rand_f64, rand_range_f64};
-use crate::{point3};
+use crate::{point3,vec3};
 use crate::Color;
-use crate::shape::{Sphere, XyRect, YzRect, XzRect, MBox, YRotate};
+use crate::shape::{Sphere, XyRect, YzRect, XzRect, MBox, YRotate, Translate};
 use crate::material::{Lambertian, Dielectric, Metal, Materials, DiffuseLight};
 use crate::texture::{CheckerTexture, NoiseTexture};
 use crate::ray::Point3;
@@ -98,13 +98,15 @@ pub(crate) fn cornell_box() -> Vec<Arc<dyn Hittable>>{
     // objs.push(Arc::new(MBox::form(point3!(265.0, 0.0, 295.0), point3!(430.0, 330.0, 460.0), white.clone())));
 
 
-    let box1 = Arc::new(MBox::form(point3!(0, 0, 0), point3!(165, 330, 165), white));
-    let ro_box1 = Arc::new(YRotate::form(box1,30.0));
+    let box1 = Arc::new(MBox::form(point3!(0, 0, 0), point3!(165, 330, 165), white.clone()));
+    let ro_box1 = Arc::new(YRotate::form(box1,-15.0));
+    let box1 = Arc::new(Translate::form(ro_box1, vec3!(265,0,295)));
+    objs.push(box1);
+    let box2 = Arc::new(MBox::form(point3!(0, 0, 0), point3!(165,165,165), white.clone()));
+    let ro_box2 = Arc::new(YRotate::form(box2,18.0));
+    let box2 = Arc::new(Translate::form(ro_box2, vec3!(130,0,65)));
 
-
-    objs.push(ro_box1);
-
-
+    objs.push(box2);
 
     objs
 }

@@ -12,11 +12,6 @@ pub enum Tuple{
     UV(f64,f64)
 }
 
-pub enum Common{
-    UV(f64,f64),
-    None
-}
-
 pub enum Axis{
     X,
     Y,

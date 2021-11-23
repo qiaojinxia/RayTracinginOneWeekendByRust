@@ -61,7 +61,14 @@ fn ray_color(ray:Ray,background:&Color,world:&HittableList,depth:i32) -> Color{
         return match ray {
             Some(scattered) => {
                 let attenuation = rec.material.clone().unwrap().get_color(&rec);
-                emitted + attenuation * ray_color(scattered, background,world, depth - 1)
+
+                //兰伯特定律
+                let cos_theta = rec.normal.unwrap() * ray.unwrap().direction();
+                // //辐射率
+                // let radiance = ray.unwrap().direction() * rec.p.unwrap();
+                //蒙特卡洛积分
+
+                emitted + attenuation * ray_color(scattered, background,world, depth - 1) * cos_theta
             }
                 None => emitted
         }
@@ -126,7 +133,7 @@ fn main() {
             objs = cornell_box();
             aspect_ratio = 1.0;
             image_width = 800;
-            samples_per_pixel = 10;
+            samples_per_pixel = 40;
             background = point3!(0,0,0);
             lookfrom =  point3!(278, 278, -800);
             lookat =  point3!(278, 278, 0);
@@ -135,7 +142,7 @@ fn main() {
         _ => {}
     }
     let image_height = (image_width as f64 / aspect_ratio) as i32;
-    let max_depth = 100;
+    let max_depth = 50;
     let dist_to_focus = 10.0;
     //Camera
     let camera_arc = Arc::new(Camera::new(

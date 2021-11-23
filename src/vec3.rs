@@ -231,9 +231,7 @@ impl Vec3{
 
     }
 
-    pub(crate) fn rotate_x(v1:Vec3,radians:f64) -> Self{
-        let sin_theta = radians.sin();
-        let cos_theta = radians.cos();
+    pub(crate) fn rotate_x(v1:Vec3,sin_theta:f64,cos_theta:f64) -> Self{
         let r1 = Vec3::form(1.0,0.0,0.0);
         let r2 = Vec3::form(0.0,cos_theta,-sin_theta);
         let r3 = Vec3::form(0.0,sin_theta,cos_theta);
@@ -264,9 +262,9 @@ impl Vec3{
     pub(crate) fn rotate_z(v1:Vec3,radians:f64) -> Self{
         let sin_theta = radians.sin();
         let cos_theta = radians.cos();
-        let r1 = Vec3::form(cos_theta,0.0,-sin_theta);
-        let r2 = Vec3::form(0.0,1.0,0.0);
-        let r3 = Vec3::form(sin_theta,0.0,cos_theta);
+        let r1 = Vec3::form(cos_theta,-sin_theta,0.0);
+        let r2 = Vec3::form(sin_theta,cos_theta,0.0);
+        let r3 = Vec3::form(0.0,0.0,1.0);
         let x = Vec3::dot(r1 ,v1);
         let y = Vec3::dot(r2 ,v1);
         let z = Vec3::dot(r3 ,v1);

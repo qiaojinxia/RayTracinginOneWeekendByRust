@@ -65,9 +65,11 @@ impl StlReader{
             let mut p1 = point3!(t1_x,t1_y,t1_z) ;
             let mut p2 = point3!(t2_x, t2_y, t2_z) ;
             let mut p3 = point3!(t3_x, t3_y, t3_z);
-            p1 = Vec3::rotate_x(p1,angle);
-            p2 = Vec3::rotate_x(p2,angle);
-            p3 = Vec3::rotate_x(p3,angle);
+            let sin_theta = angle.sin();
+            let cos_theta = angle.cos();
+            p1 = Vec3::rotate_x(p1,angle.sin(),angle.cos());
+            p2 = Vec3::rotate_x(p2,sin_theta,cos_theta);
+            p3 = Vec3::rotate_x(p3,sin_theta,cos_theta);
             objs.push(Arc::new(Triangle::form(p1, p2,p3,material.clone())));
             self.read_angle_info();
         }

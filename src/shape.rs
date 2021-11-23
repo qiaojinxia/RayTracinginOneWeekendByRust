@@ -472,7 +472,7 @@ impl Hittable for MBox{
 }
 
 pub(crate) struct YRotate{
-    obj:Option<Arc<dyn Hittable>>,
+    obj_ptr:Option<Arc<dyn Hittable>>,
     sin_theta:f64,
     cos_theta:f64,
     has_box:bool,
@@ -490,7 +490,7 @@ impl YRotate{
     pub(crate) fn form(p:Arc<dyn Hittable>,angle:f64) -> Self{
         let radians = degrees_to_radians(angle);
         let mut after_rotate_obj = Self{
-            obj: Some(p.clone()),
+            obj_ptr: Some(p.clone()),
             sin_theta: radians.sin(),
             cos_theta: radians.cos(),
             has_box:false,
@@ -534,8 +534,8 @@ impl Hittable for YRotate{
         let direction = ray.direction();
         let new_origin = Vec3::rotate_y(origin,self.sin_theta,self.cos_theta);
         let new_dir = Vec3::rotate_y(direction,self.sin_theta,self.cos_theta);
-        let rotated_ray = Ray::form(new_origin,new_dir);
-        if !self.obj.clone().unwrap().hit(rotated_ray,t_min,t_max,rec) {
+        let rotated_ray = Ray::form (new_origin,new_dir);
+        if !self.obj_ptr.clone().unwrap().hit(rotated_ray, t_min, t_max, rec) {
             return false;
         }
         let p = rec.p.unwrap();
@@ -559,5 +559,52 @@ impl Hittable for YRotate{
             Axis::Y => { center.y}
             Axis::Z => { center.z}
         }
+    }
+}
+
+pub(crate) struct Translate{
+    obj_ptr:Option<Arc<dyn Hittable>>,
+    offset:Vec3,
+}
+
+impl Translate{
+    pub(crate) fn form(p:Arc<dyn Hittable>,displacement:Vec3) -> Self{
+        Self{
+            obj_ptr: Some(p.clone()),
+            offset: displacement,
+        }
+    }
+}
+
+impl Debug for Translate {
+    fn fmt(&self, _f: &mut Formatter<'_>) -> std::fmt::Result {
+        todo!()
+    }
+}
+
+impl Hittable for Translate{
+    fn hit(&self, ray: Ray, t_min: f64, t_max: f64, rec: &mut HitRecorder) -> bool {
+        let new_origin = ray.origin() - self.offset;
+        let moved_ray = Ray::form(new_origin, ray.direction());
+        if !self.obj_ptr.clone().unwrap().hit(moved_ray, t_min, t_max, rec){
+            return false
+        }
+        let mut p = rec.p.unwrap();
+        p += self.offset;
+        rec.p = Some(p);
+        rec.set_face_normal(moved_ray, rec.normal.unwrap());
+        true
+    }
+
+    fn bounding_box(&self) -> Option<AABB> {
+        let child_box = self.obj_ptr.clone().unwrap().bounding_box().unwrap();
+        Some(AABB::form(
+            child_box.minimum + self.offset,
+            child_box.maximum + self.offset,
+        ))
+    }
+
+    fn get_center_point(&self, a: &Axis) -> f64 {
+        self.obj_ptr.clone().unwrap().get_center_point(a) + a.call(self.offset)
     }
 }
