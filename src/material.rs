@@ -39,7 +39,7 @@ impl Materials for Lambertian{
         if scatter_direction.near_zero(){
             scatter_direction = rec.normal.unwrap();
         }
-        return Some(Ray::form(rec.p.unwrap(), scatter_direction))
+        return Some(Ray::form(rec.p.unwrap(), scatter_direction.unit_vector()))
 
     }
 

@@ -52,12 +52,13 @@ impl Color{
     }
 }
 
+
 fn ray_color(ray:Ray,background:&Color,world:&HittableList,depth:i32) -> Color{
     let mut rec = HitRecorder::new();
     if depth <= 0 {
         return Color::set(0.0,0.0,0.0);
     }
-    if rand_range_f64(0.0,1.0) > 0.8{
+    if rand_range_f64(0.0,1.0) > 0.8 {
         return Color::set(0.0,0.0,0.0);
     }
     if world.hit(ray, 0.0001, f64::MAX, rec.borrow_mut()){
@@ -68,14 +69,12 @@ fn ray_color(ray:Ray,background:&Color,world:&HittableList,depth:i32) -> Color{
                 let attenuation = rec.material.clone().unwrap().get_color(&rec);
                 //兰伯特定律
                 let cos_theta = Vec3::dot(rec.normal.unwrap() ,ray.unwrap().direction());
-                // //辐射率
-                // let radiance = ray.unwrap().direction() * rec.p.unwrap();
                 //蒙特卡洛积分
-                let pbf =  0.5 / PI;
-                //自发光 + fr
-                emitted + attenuation * rec.material.clone().unwrap().
+                let pdf =  0.5 / PI;
+                //自发光
+                attenuation * rec.material.clone().unwrap().
                     scattering_pdf(ray.unwrap().borrow(),rec.borrow(),scattered.borrow()) *
-                    ray_color(scattered, background,world, depth - 1) * cos_theta / pbf / 0.8
+                    ray_color(scattered, background,world, depth - 1) * cos_theta / pdf / 0.8
             }
             None => {
                 emitted
@@ -99,7 +98,7 @@ fn main() {
 
     //Image
     let mut image_width = 400;
-    let mut samples_per_pixel = 100;
+    let mut samples_per_pixel = 1;
     let mut aspect_ratio = 16.0 / 9.0;
 
     match seneces {
@@ -181,6 +180,7 @@ fn main() {
             for  j in render_segment_start .. render_segment_end{
                 for  i in 0.. image_width {
                     let mut pixel_color = Color::new();
+                    //往一个像素 偏移非常小的dw方向上 发射不同的光 采样
                     for _s in  0 .. samples_per_pixel{
                         let u = (i as f64 + rand_f64()) / (image_width -1) as f64;
                         let v = (((image_height - 1) - j)  as f64 + rand_f64()) / (image_height - 1) as f64 ;
