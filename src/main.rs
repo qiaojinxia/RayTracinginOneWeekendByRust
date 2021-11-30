@@ -85,7 +85,6 @@ fn ray_color(ray:Ray,background:&Color,world:&HittableList,depth:i32) -> Color{
 }
 
 
-
 fn main() {
     let start = Instant::now();
     let mut lookfrom = Vec3::new();
