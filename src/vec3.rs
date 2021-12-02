@@ -1,3 +1,4 @@
+use std::f64::consts::PI;
 use std::ops::{Add, Sub, Mul, Neg, AddAssign, MulAssign, DivAssign, Div};
 use crate::ray::Point3;
 use crate::common::{rand_range_f64, rand_f64};
@@ -269,6 +270,25 @@ impl Vec3{
         let y = Vec3::dot(r2 ,v1);
         let z = Vec3::dot(r3 ,v1);
         Self{
+            x,
+            y,
+            z
+        }
+    }
+    pub(crate) fn random_uniform() -> Self{
+        let v = rand_range_f64(0.0,1.0);
+        let u = rand_range_f64(0.0,1.0);
+        Self::random_cosine(u,v,1.0)
+    }
+
+    pub(crate) fn random_cosine(u:f64,v:f64,m:f64) -> Self{
+        let z = u;
+        let r = f64::max(0.0, 1.0 - z * z).sqrt();
+        let phi = 2.0 * PI * v;
+
+        let x = r * phi.cos();
+        let y = r * phi.sin();
+        return Self{
             x,
             y,
             z

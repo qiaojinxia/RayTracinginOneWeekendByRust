@@ -64,15 +64,15 @@ fn ray_color(ray:Ray,background:&Color,world:&HittableList,depth:i32) -> Color{
     if world.hit(ray, 0.0001, f64::MAX, rec.borrow_mut()){
         let ray = rec.material.clone().unwrap().scatter(&ray, &mut rec);
         let emitted= rec.material.clone().unwrap().emitted(rec.u,rec.v,rec.p.unwrap());
+        let attenuation = rec.material.clone().unwrap().get_color(&rec);
         return match ray {
             Some(scattered) => {
-                let attenuation = rec.material.clone().unwrap().get_color(&rec);
                 //兰伯特定律
                 let cos_theta = Vec3::dot(rec.normal.unwrap() ,ray.unwrap().direction());
                 //蒙特卡洛积分
                 let pdf =  0.5 / PI;
                 //自发光
-                attenuation * rec.material.clone().unwrap().
+                emitted + attenuation * rec.material.clone().unwrap().
                     scattering_pdf(ray.unwrap().borrow(),rec.borrow(),scattered.borrow()) *
                     ray_color(scattered, background,world, depth - 1) * cos_theta / pdf / 0.8
             }
