@@ -65,12 +65,15 @@ fn ray_color(ray:Ray,background:&Color,world:&HittableList,depth:i32) -> Color{
         let ray = rec.material.clone().unwrap().scatter(&ray, &mut rec);
         let emitted= rec.material.clone().unwrap().emitted(rec.u,rec.v,rec.p.unwrap());
         let attenuation = rec.material.clone().unwrap().get_color(&rec);
+        //蒙特卡洛积分
+        let pdf =  0.5 / PI;
         return match ray {
             Some(scattered) => {
                 //兰伯特定律
                 let cos_theta = Vec3::dot(rec.normal.unwrap() ,ray.unwrap().direction());
-                //蒙特卡洛积分
-                let pdf =  0.5 / PI;
+
+                //对光源
+
                 //自发光
                 emitted + attenuation * rec.material.clone().unwrap().
                     scattering_pdf(ray.unwrap().borrow(),rec.borrow(),scattered.borrow()) *
@@ -135,7 +138,7 @@ fn main() {
             objs = cornell_box();
             aspect_ratio = 1.0;
             image_width = 500;
-            samples_per_pixel = 1000;
+            samples_per_pixel = 500;
             background = point3!(0,0,0);
             lookfrom =  point3!(278, 278, -800);
             lookat =  point3!(278, 278, 0);
@@ -144,7 +147,7 @@ fn main() {
         _ => {}
     }
     let image_height = (image_width as f64 / aspect_ratio) as i32;
-    let max_depth = 200;
+    let max_depth = 300;
     let dist_to_focus = 10.0;
     //Camera
     let camera_arc = Arc::new(Camera::new(
