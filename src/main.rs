@@ -72,9 +72,11 @@ fn ray_color(ray:Ray,background:&Color,world:&HittableList,depth:i32) -> Color{
                 //兰伯特定律
                 let cos_theta = Vec3::dot(rec.normal.unwrap() ,ray.unwrap().direction());
 
-                //对光源
+                //直接光照
+                // L_dir = L_i * f_r * cos θ * cos θ’ / |x’ - p|^2 / pdf_light
 
-                //自发光
+                // let l_dir = emitted + attenuation
+                //间接光照  L_indir = shade(q, -wi) * f_r * cos θ / pdf_hemi / P_RR
                 emitted + attenuation * rec.material.clone().unwrap().
                     scattering_pdf(ray.unwrap().borrow(),rec.borrow(),scattered.borrow()) *
                     ray_color(scattered, background,world, depth - 1) * cos_theta / pdf / 0.8

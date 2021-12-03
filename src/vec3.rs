@@ -278,7 +278,7 @@ impl Vec3{
     pub(crate) fn random_uniform() -> Self{
         let z = rand_f64();
         let s = rand_f64();
-        let r = (1.0 - z * z).sqrt();
+        let r = (1.0 - z * z * z).sqrt();
         let phi = 2.0 * PI * s;
         let x = phi.cos() * r;
         let y = phi.sin() * r;
