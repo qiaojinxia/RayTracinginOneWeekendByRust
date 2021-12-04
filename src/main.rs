@@ -55,29 +55,49 @@ impl Color{
 
 fn ray_color(ray:Ray,background:&Color,world:&HittableList,depth:i32) -> Color{
     let mut rec = HitRecorder::new();
-    if depth <= 0 {
-        return Color::set(0.0,0.0,0.0);
-    }
-    if rand_range_f64(0.0,1.0) > 0.8 {
-        return Color::set(0.0,0.0,0.0);
-    }
     if world.hit(ray, 0.0001, f64::MAX, rec.borrow_mut()){
         let ray = rec.material.clone().unwrap().scatter(&ray, &mut rec);
         let emitted= rec.material.clone().unwrap().emitted(rec.u,rec.v,rec.p.unwrap());
-        let attenuation = rec.material.clone().unwrap().get_color(&rec);
         //蒙特卡洛积分
         let pdf =  0.5 / PI;
         return match ray {
             Some(scattered) => {
-                //兰伯特定律
+                let mut l_in_dir  = Color::new();
+                let attenuation = rec.material.clone().unwrap().get_color(&rec);
+                let material = rec.material.clone().unwrap();
+
+                //对光源进行采样进行积分
+                let x1 = rand_range_f64(213.0,343.0);
+                let x2 = rand_range_f64(227.0,332.0);
+                let light_p = point3!(x1,554.0,x2);
+                let to_light = light_p - rec.p.unwrap();
+                if Vec3::dot(to_light, rec.normal.unwrap()) > 0.0{
+                    let unit_to_light = to_light.unit_vector();
+                    let cos_theta = Vec3::dot(unit_to_light,rec.normal.unwrap());
+                    if cos_theta > 0.0001{
+                        let light_cos_theta = Vec3::dot(Vec3::form(0.0,1.0,0.0),unit_to_light);
+                        let da = (343.0 - 213.0) * (332.0 - 227.0);
+                        let distance = to_light.length_squared();
+                        let pdf_light =  distance / ( da * light_cos_theta );
+                        let ray_light = Ray::form(rec.p.unwrap(),to_light);
+                        l_in_dir =  attenuation * material.
+                            scattering_pdf(ray.unwrap().borrow(),rec.borrow(),ray_light.borrow()) *
+                            ray_color(ray_light, background,world, 0) * cos_theta / pdf_light;
+                    }
+                }
+                if depth <= 0 {
+                    return l_in_dir;
+                }
+                if rand_range_f64(0.0,1.0) > 0.8 {
+                    return l_in_dir;
+                }
                 let cos_theta = Vec3::dot(rec.normal.unwrap() ,ray.unwrap().direction());
-
-                //对光源
-
-                //自发光
-                emitted + attenuation * rec.material.clone().unwrap().
+                //对间接光照进行采样 进行积分
+                let l_dir = emitted + attenuation * material.
                     scattering_pdf(ray.unwrap().borrow(),rec.borrow(),scattered.borrow()) *
-                    ray_color(scattered, background,world, depth - 1) * cos_theta / pdf / 0.8
+                    ray_color(scattered, background,world, depth - 1) * cos_theta / pdf / 0.8;
+
+                l_in_dir + l_dir
             }
             None => {
                 emitted
@@ -138,16 +158,16 @@ fn main() {
             objs = cornell_box();
             aspect_ratio = 1.0;
             image_width = 500;
-            samples_per_pixel = 500;
+            samples_per_pixel = 1500;
             background = point3!(0,0,0);
             lookfrom =  point3!(278, 278, -800);
             lookat =  point3!(278, 278, 0);
             vfov = 40.0;
         }
-        _ => {}
+        _ =>  {}
     }
     let image_height = (image_width as f64 / aspect_ratio) as i32;
-    let max_depth = 300;
+    let max_depth = 200;
     let dist_to_focus = 10.0;
     //Camera
     let camera_arc = Arc::new(Camera::new(
