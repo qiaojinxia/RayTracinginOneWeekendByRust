@@ -511,8 +511,11 @@ impl YRotate{
                 points.push(point3!(p1.x, p0.y, p0.z));
                 points.push(point3!(p1.x, p1.y, p0.z));
 
-                let mut min = Vec3::min(p0,p1);
-                let mut max = Vec3::max(p0,p1);
+                points.push(p0);
+                points.push(p1);
+
+                let mut min = point3!(f64::MAX,f64::MAX,f64::MAX);
+                let mut max = point3!(f64::MIN,f64::MIN,f64::MIN);
 
                 for i in points.iter(){
                     min = Vec3::min(min,Vec3::rotate_y(*i,after_rotate_obj.sin_theta,after_rotate_obj.cos_theta));
@@ -532,8 +535,8 @@ impl Hittable for YRotate{
     fn hit(&self, ray: Ray, t_min: f64, t_max: f64, rec: &mut HitRecorder) -> bool {
         let origin = ray.origin();
         let direction = ray.direction();
-        let new_origin = Vec3::rotate_y(origin,self.sin_theta,self.cos_theta);
-        let new_dir = Vec3::rotate_y(direction,self.sin_theta,self.cos_theta);
+        let new_origin = Vec3::rotate_y(origin,-self.sin_theta,self.cos_theta);
+        let new_dir = Vec3::rotate_y(direction,-self.sin_theta,self.cos_theta);
         let rotated_ray = Ray::form (new_origin,new_dir);
         if !self.obj_ptr.clone().unwrap().hit(rotated_ray, t_min, t_max, rec) {
             return false;

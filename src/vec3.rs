@@ -121,6 +121,10 @@ impl Vec3{
     pub(crate) fn length(self) -> f64{
         self.length_squared().sqrt()
     }
+    pub(crate) fn norm_two(n:Vec3,u:Vec3) -> f64{
+        return ((n.x - u.x).powi(2) + (n.y * u.y).powi(2) + (n.z * u.z).powi(2)).sqrt()
+    }
+
     pub(crate) fn length_squared(self) -> f64{
         return self.x * self.x + self.y * self.y + self.z * self.z
     }

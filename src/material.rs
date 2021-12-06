@@ -43,7 +43,7 @@ impl Materials for Lambertian{
 
     }
 
-    fn scattering_pdf(&self,r_in: &Ray, rec: &HitRecorder, scattered: &Ray) -> f64 {
+    fn scattering_pdf(&self,_r_in: &Ray, rec: &HitRecorder, scattered: &Ray) -> f64 {
         //计算辐射量 单位能量 / 单位面积
         let cos_theta = Vec3::dot(rec.normal.unwrap(), scattered.direction().unit_vector());
         if cos_theta < 0.0 {
