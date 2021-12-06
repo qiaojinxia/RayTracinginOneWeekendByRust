@@ -4,7 +4,7 @@ use crate::hit::{Hittable, HitRecorder};
 use std::fmt::{Debug, Formatter};
 use std::sync::Arc;
 use crate::material::Materials;
-use crate::common::{cmp_f64, f64_near_zero, Axis, Tuple, degrees_to_radians};
+use crate::common::{cmp_f64, f64_near_zero, Axis, Tuple, degrees_to_radians, rand_range_f64};
 use std::f64::consts::PI;
 use crate::{point3};
 
@@ -81,6 +81,14 @@ impl Hittable for Sphere{
 
     fn get_center_point(&self, a: &Axis) -> f64 {
         a.call(self.center)
+    }
+
+    fn pdf_value(&self, p: Point3, dir: Vec3) -> Option<f64> {
+        todo!()
+    }
+
+    fn random_sample(&self) -> Vec3 {
+        todo!()
     }
 }
 
@@ -178,6 +186,14 @@ impl Hittable for Triangle{
 
     fn get_center_point(&self, a: &Axis) -> f64 {
         a.call(self.w)
+    }
+
+    fn pdf_value(&self, p: Point3, dir: Vec3) -> Option<f64> {
+        todo!()
+    }
+
+    fn random_sample(&self) -> Vec3 {
+        todo!()
     }
 }
 
@@ -279,6 +295,14 @@ impl Hittable for XyRect{
            Axis::Z => { self.k }
        }
     }
+
+    fn pdf_value(&self, p: Point3, dir: Vec3) -> Option<f64> {
+        todo!()
+    }
+
+    fn random_sample(&self) -> Vec3 {
+        todo!()
+    }
 }
 
 
@@ -342,6 +366,26 @@ impl Hittable for XzRect{
             Axis::Y => { self.k }
             Axis::Z => { self.z0 + (self.z1 - self.z0) / 2.0 }
         }
+    }
+
+    fn pdf_value(&self, p: Point3, to_light: Vec3) -> Option<f64> {
+        let mut rec =  HitRecorder::new();
+        if self.hit(Ray::form(p,to_light),0.0001,f64::MAX,&mut rec){
+            let light_cos_theta = Vec3::dot(to_light,rec.normal.unwrap());
+            if light_cos_theta < 0.0{
+                return None
+            }
+            let da = (self.x1-self.x0) * (self.z1-self.z0);
+            let distance = to_light.length_squared();
+            distance / ( da * light_cos_theta )
+        }
+       None
+    }
+
+    fn random_sample(&self) -> Vec3 {
+        let x1 = rand_range_f64(213.0,343.0);
+        let x2 = rand_range_f64(227.0,332.0);
+        point3!(x1,554.0,x2)
     }
 }
 
@@ -408,6 +452,14 @@ impl Hittable for YzRect{
             Axis::Z => { self.z0 + (self.z1 - self.z0) / 2.0 }
         }
     }
+
+    fn pdf_value(&self, p: Point3, dir: Vec3) -> Option<f64> {
+        todo!()
+    }
+
+    fn random_sample(&self) -> Vec3 {
+        todo!()
+    }
 }
 
 pub(crate) struct MBox{
@@ -468,6 +520,14 @@ impl Hittable for MBox{
                 Axis::Y => { center_point.y}
                 Axis::Z => { center_point.z }
             }
+    }
+
+    fn pdf_value(&self, p: Point3, dir: Vec3) -> Option<f64> {
+        todo!()
+    }
+
+    fn random_sample(&self) -> Vec3 {
+        todo!()
     }
 }
 
@@ -562,6 +622,14 @@ impl Hittable for YRotate{
             Axis::Y => { center.y}
             Axis::Z => { center.z}
         }
+    }
+
+    fn pdf_value(&self, p: Point3, dir: Vec3) -> Option<f64> {
+        todo!()
+    }
+
+    fn random_sample(&self) -> Vec3 {
+        todo!()
     }
 }
 

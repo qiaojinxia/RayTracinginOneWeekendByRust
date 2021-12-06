@@ -1,8 +1,9 @@
 use std::sync::Arc;
 use crate::hit::{Hittable, HitRecorder};
-use crate::ray::Ray;
+use crate::ray::{Point3, Ray};
 use crate::shape::AABB;
 use crate::common::{surrounding_box, Axis};
+use crate::vec3::Vec3;
 
 #[derive(Debug, Clone)]
 pub(crate) struct HittableList{
@@ -48,6 +49,14 @@ impl Hittable for HittableList{
     }
 
     fn get_center_point(&self, _a: &Axis) -> f64 {
+        todo!()
+    }
+
+    fn pdf_value(&self, p: Point3, dir: Vec3) -> Option<f64> {
+        todo!()
+    }
+
+    fn random_sample(&self) -> Vec3 {
         todo!()
     }
 }

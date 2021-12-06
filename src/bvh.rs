@@ -1,11 +1,12 @@
 use crate::hit::{Hittable, HitRecorder};
-use crate::ray::{Ray};
+use crate::ray::{Point3, Ray};
 use crate::shape::AABB;
 use std::fmt::{Debug, Formatter};
 use std::sync::Arc;
 use crate::common::{surrounding_box, Axis};
 use std::borrow::{BorrowMut, Borrow};
 use crate::sort::quick_select;
+use crate::vec3::Vec3;
 
 pub(crate) struct BvhNode{
     src_objects:Option<Vec<Arc<dyn Hittable>>>,
@@ -57,6 +58,14 @@ impl Hittable for BvhNode {
     fn get_center_point(&self, a: &Axis) -> f64 {
         let center_point = (self.bbox.unwrap().maximum +  self.bbox.unwrap().minimum) / 2.0;
         a.call(center_point)
+    }
+
+    fn pdf_value(&self, p: Point3, dir: Vec3) -> f64 {
+        todo!()
+    }
+
+    fn random_sample(&self) -> Vec3 {
+        todo!()
     }
 }
 impl BvhNode{

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use crate::hit::Hittable;
-use crate::common::{rand_f64, rand_range_f64};
+use crate::common::{rand_f64, rand_range_f64, Sences};
 use crate::{point3,vec3};
 use crate::Color;
 use crate::shape::{Sphere, XyRect, YzRect, XzRect, MBox, YRotate, Translate};
@@ -80,16 +80,21 @@ pub(crate) fn simple_light() -> Vec<Arc<dyn Hittable>>{
 
 }
 
-pub(crate) fn cornell_box() -> Vec<Arc<dyn Hittable>>{
+pub(crate) fn cornell_box_light() -> Arc<dyn Hittable>{
+    let light = Arc::new(DiffuseLight::form(Color::form(15.0, 15.0, 15.0)));
+    let light_ref = Arc::new(XzRect::form(213.0, 343.0, 227.0, 332.0, 554.0, light));
+    light_ref
+}
+
+pub(crate) fn cornell_box() -> Sences::Sences_Manager{
     let mut objs:Vec<Arc<dyn Hittable>> = vec![];
     let red   = Arc::new(Lambertian::form_color(0.65, 0.05, 0.05));
     let white = Arc::new(Lambertian::form_color(0.73, 0.73, 0.73));
     let green = Arc::new(Lambertian::form_color(0.12, 0.45, 0.15));
-    let light = Arc::new(DiffuseLight::form(Color::form(15.0, 15.0, 15.0)));
 
     objs.push(Arc::new(YzRect::form(0.0, 555.0, 0.0, 555.0, 555.0, green.clone())));
     objs.push(Arc::new(YzRect::form(0.0, 555.0, 0.0, 555.0, 0.0, red.clone())));
-    objs.push(Arc::new(XzRect::form(213.0, 343.0, 227.0, 332.0, 554.0, light)));
+
     objs.push(Arc::new(XzRect::form(0.0, 555.0, 0.0, 555.0, 0.0, white.clone())));
     objs.push(Arc::new(XzRect::form(0.0, 555.0, 0.0, 555.0, 555.0, white.clone())));
     objs.push(Arc::new(XyRect::form(0.0, 555.0, 0.0, 555.0, 555.0, white.clone())));
@@ -108,7 +113,10 @@ pub(crate) fn cornell_box() -> Vec<Arc<dyn Hittable>>{
 
     objs.push(box2);
 
-    objs
+    let light = Arc::new(DiffuseLight::form(Color::form(15.0, 15.0, 15.0)));
+    let light_ref = Arc::new(XzRect::form(213.0, 343.0, 227.0, 332.0, 554.0, light));
+    objs.push(light_ref.clone());
+    Sences::SencesManager(objs, Some(light_ref))
 }
 
 

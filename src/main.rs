@@ -13,6 +13,7 @@ mod sort;
 mod texture;
 mod sences;
 mod macros;
+mod pdf;
 
 use std::fmt::{Display, Formatter};
 use crate::vec3::Vec3;
@@ -24,10 +25,10 @@ use crate::hit::{HitRecorder, Hittable};
 use crate::hittable_list::HittableList;
 use std::sync::{Arc, mpsc};
 use crate::camera::Camera;
-use crate::common::{rand_f64, clamp, rand_range_f64, except};
+use crate::common::{rand_f64, clamp, rand_range_f64, except, Sences};
 use crate::bvh::BvhNode;
 use std::time::Instant;
-use crate::sences::{two_spheres, random_scene, two_perlin_spheres, simple_light, cornell_box};
+use crate::sences::{two_spheres, random_scene, two_perlin_spheres, simple_light, cornell_box, cornell_box_light};
 use std::f64::consts::PI;
 
 type Color = Vec3;
@@ -53,7 +54,7 @@ impl Color{
 }
 
 
-fn ray_color(ray:Ray,background:&Color,world:&HittableList,depth:i32) -> Color{
+fn ray_color(ray:Ray,background:&Color,world:Sences::SencesManager,depth:i32) -> Color{
     let mut rec = HitRecorder::new();
     if world.hit(ray, 0.0001, f64::MAX, rec.borrow_mut()){
         let ray = rec.material.clone().unwrap().scatter(&ray, &mut rec);
@@ -66,23 +67,18 @@ fn ray_color(ray:Ray,background:&Color,world:&HittableList,depth:i32) -> Color{
                 let attenuation = rec.material.clone().unwrap().get_color(&rec);
                 let material = rec.material.clone().unwrap();
 
-                //对光源进行采样进行积分
-                let x1 = rand_range_f64(213.0,343.0);
-                let x2 = rand_range_f64(227.0,332.0);
-                let light_p = point3!(x1,554.0,x2);
+                let light_p = lights.random_sample();
                 let to_light = light_p - rec.p.unwrap();
-                if Vec3::dot(to_light, rec.normal.unwrap()) > 0.0{
-                    let unit_to_light = to_light.unit_vector();
-                    let cos_theta = Vec3::dot(unit_to_light,rec.normal.unwrap());
-                    if cos_theta > 0.0001{
-                        let light_cos_theta = Vec3::dot(Vec3::form(0.0,1.0,0.0),unit_to_light);
-                        let da = (343.0 - 213.0) * (332.0 - 227.0);
-                        let distance = to_light.length_squared();
-                        let pdf_light =  distance / ( da * light_cos_theta );
-                        let ray_light = Ray::form(rec.p.unwrap(),to_light);
-                        l_in_dir =  attenuation * material.
-                            scattering_pdf(ray.unwrap().borrow(),rec.borrow(),ray_light.borrow()) *
-                            ray_color(ray_light, background,world, 0) * cos_theta / pdf_light;
+                let unit_to_light = to_light.unit_vector();
+                let cos_theta = Vec3::dot(unit_to_light,rec.normal.unwrap());
+                if cos_theta > 0.0001{
+                    let pdf_light = lights.pdf_value(rec.p.unwrap(),to_light);
+                    match pdf_light {
+                        Some(pdf_value) =>{
+                            l_in_dir =  attenuation * material.
+                                scattering_pdf(ray.unwrap().borrow(),rec.borrow(),ray_light.borrow()) * emitted * cos_theta * pdf_light;
+                        }
+                        None =>{}
                     }
                 }
                 if depth <= 0 {
@@ -174,6 +170,7 @@ fn main() {
         lookfrom, lookat, Vec3::form(0.0,1.0,0.0), vfov, aspect_ratio, aperture, dist_to_focus));
 
 
+
     //World
     let mut world = HittableList::new();
     //读取stl模型三角面
@@ -207,7 +204,7 @@ fn main() {
                         let u = (i as f64 + rand_f64()) / (image_width -1) as f64;
                         let v = (((image_height - 1) - j)  as f64 + rand_f64()) / (image_height - 1) as f64 ;
                         let ray = camera_t.get_ray(u,v);
-                        pixel_color += ray_color(ray,&background,world_t.borrow(),max_depth);
+                        pixel_color += ray_color(ray,&background,world_t.borrow(),objs.1,max_depth);
                     }
                     write_color(file.borrow_mut(), pixel_color,samples_per_pixel);
                 }

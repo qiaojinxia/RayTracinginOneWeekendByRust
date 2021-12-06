@@ -22,11 +22,12 @@ pub(crate) trait Hittable:Send+ Sync +Debug  {
     fn hit(&self,ray:Ray,t_min:f64,t_max:f64,rec:&mut HitRecorder) -> bool;
     fn bounding_box(&self) -> Option<AABB>;
     fn get_center_point(&self, a:&Axis) -> f64;
+    fn pdf_value(&self,p:Point3,dir:Vec3) -> Option<f64>;
+    fn random_sample(&self) -> Vec3;
 }
 
 //计算射线物体的前面还是后面
 impl HitRecorder{
-
     pub(crate) fn new() -> HitRecorder {
         Self{
             p: None,
