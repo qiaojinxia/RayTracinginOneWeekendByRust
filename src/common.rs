@@ -5,9 +5,7 @@ use std::cmp::Ordering::{Less, Equal, Greater};
 use crate::shape::AABB;
 use crate::vec3::Vec3;
 use std::f64::consts::PI;
-use std::sync::Arc;
 use crate::{point3};
-use crate::hit::Hittable;
 use crate::ray::Point3;
 
 
@@ -15,9 +13,7 @@ pub enum Tuple{
     UV(f64,f64)
 }
 
-pub enum Sences{
-    SencesManager(Vec<Arc<dyn Hittable>>, Option<Arc<dyn Hittable>>)
-}
+
 pub enum Axis{
     X,
     Y,

@@ -60,9 +60,10 @@ impl Hittable for BvhNode {
         a.call(center_point)
     }
 
-    fn pdf_value(&self, p: Point3, dir: Vec3) -> f64 {
+    fn pdf_value(&self, rec: &mut HitRecorder, p: Point3, dir: Vec3) -> f64 {
         todo!()
     }
+
 
     fn random_sample(&self) -> Vec3 {
         todo!()

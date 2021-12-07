@@ -1,12 +1,52 @@
 use std::sync::Arc;
-use crate::hit::Hittable;
-use crate::common::{rand_f64, rand_range_f64, Sences};
+use crate::hit::{HitRecorder, Hittable};
+use crate::common::{rand_f64, rand_range_f64};
 use crate::{point3,vec3};
+use crate::bvh::BvhNode;
 use crate::Color;
+use crate::hittable_list::HittableList;
 use crate::shape::{Sphere, XyRect, YzRect, XzRect, MBox, YRotate, Translate};
 use crate::material::{Lambertian, Dielectric, Metal, Materials, DiffuseLight};
 use crate::texture::{CheckerTexture, NoiseTexture};
-use crate::ray::Point3;
+use crate::ray::{Point3, Ray};
+
+
+pub(crate) struct SencesManger{
+    light:Option<Arc<dyn Hittable>>,
+    objs:Vec<Arc<dyn Hittable>>,
+    finally_objs:Option<Arc<HittableList>>,
+}
+
+impl SencesManger{
+    pub(crate) fn new() -> Arc<Self>{
+        Arc::new(Self{
+            light: None,
+            objs: vec![],
+            finally_objs: None
+        })
+    }
+    fn form(light:Option<Arc<dyn Hittable>>,objs:Vec<Arc<dyn Hittable>>) -> Arc<Self>{
+        let mut s = Self{
+            light,
+            objs,
+            finally_objs: None,
+        };
+        s.build_bvh();
+        Arc::new(s)
+    }
+    pub(crate) fn hit(&self, ray:Ray, min:f64, max:f64, rec:&mut HitRecorder) -> bool{
+        return self.finally_objs.clone().unwrap().hit(ray,min,max,rec)
+    }
+    pub(crate) fn light(&self) -> Option<Arc<dyn Hittable>> {
+        return self.light.clone()
+    }
+    pub(crate) fn build_bvh(&mut self){
+        let bvh_node = BvhNode::form(self.objs.as_mut_slice(),0.0001,f64::MAX);
+        let mut hitable_list = HittableList::new();
+        hitable_list.add(Arc::new(bvh_node.unwrap()));
+        self.finally_objs = Some(Arc::new(hitable_list));
+    }
+}
 
 pub(crate) fn random_scene() -> Vec<Arc<dyn Hittable>> {
     let mut objs:Vec<Arc<dyn Hittable>> = vec![];
@@ -86,7 +126,7 @@ pub(crate) fn cornell_box_light() -> Arc<dyn Hittable>{
     light_ref
 }
 
-pub(crate) fn cornell_box() -> Sences::Sences_Manager{
+pub(crate) fn cornell_box() -> Arc<SencesManger>{
     let mut objs:Vec<Arc<dyn Hittable>> = vec![];
     let red   = Arc::new(Lambertian::form_color(0.65, 0.05, 0.05));
     let white = Arc::new(Lambertian::form_color(0.73, 0.73, 0.73));
@@ -116,7 +156,7 @@ pub(crate) fn cornell_box() -> Sences::Sences_Manager{
     let light = Arc::new(DiffuseLight::form(Color::form(15.0, 15.0, 15.0)));
     let light_ref = Arc::new(XzRect::form(213.0, 343.0, 227.0, 332.0, 554.0, light));
     objs.push(light_ref.clone());
-    Sences::SencesManager(objs, Some(light_ref))
+    SencesManger::form(Some(light_ref.clone()),objs)
 }
 
 

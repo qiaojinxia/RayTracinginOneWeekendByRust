@@ -40,7 +40,6 @@ impl Materials for Lambertian{
             scatter_direction = rec.normal.unwrap();
         }
         return Some(Ray::form(rec.p.unwrap(), scatter_direction.unit_vector()))
-
     }
 
     fn scattering_pdf(&self,_r_in: &Ray, rec: &HitRecorder, scattered: &Ray) -> f64 {

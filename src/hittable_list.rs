@@ -17,6 +17,11 @@ impl HittableList{
     pub(crate) fn add(&mut self, obj:Arc<dyn Hittable>){
         self.objects.push(obj);
     }
+    pub(crate) fn add_objs(&mut self, objs:Vec<Arc<dyn Hittable>>){
+        for obj in objs.iter(){
+            self.objects.push(obj.clone());
+        }
+    }
 }
 
 
@@ -52,9 +57,10 @@ impl Hittable for HittableList{
         todo!()
     }
 
-    fn pdf_value(&self, p: Point3, dir: Vec3) -> Option<f64> {
+    fn pdf_value(&self, rec: &mut HitRecorder, p: Point3, dir: Vec3) -> f64 {
         todo!()
     }
+
 
     fn random_sample(&self) -> Vec3 {
         todo!()

@@ -83,9 +83,10 @@ impl Hittable for Sphere{
         a.call(self.center)
     }
 
-    fn pdf_value(&self, p: Point3, dir: Vec3) -> Option<f64> {
+    fn pdf_value(&self, rec: &mut HitRecorder, p: Point3, dir: Vec3) -> f64 {
         todo!()
     }
+
 
     fn random_sample(&self) -> Vec3 {
         todo!()
@@ -188,9 +189,10 @@ impl Hittable for Triangle{
         a.call(self.w)
     }
 
-    fn pdf_value(&self, p: Point3, dir: Vec3) -> Option<f64> {
+    fn pdf_value(&self, rec: &mut HitRecorder, p: Point3, dir: Vec3) -> f64 {
         todo!()
     }
+
 
     fn random_sample(&self) -> Vec3 {
         todo!()
@@ -296,9 +298,10 @@ impl Hittable for XyRect{
        }
     }
 
-    fn pdf_value(&self, p: Point3, dir: Vec3) -> Option<f64> {
+    fn pdf_value(&self, rec: &mut HitRecorder, p: Point3, dir: Vec3) -> f64 {
         todo!()
     }
+
 
     fn random_sample(&self) -> Vec3 {
         todo!()
@@ -368,18 +371,15 @@ impl Hittable for XzRect{
         }
     }
 
-    fn pdf_value(&self, p: Point3, to_light: Vec3) -> Option<f64> {
-        let mut rec =  HitRecorder::new();
-        if self.hit(Ray::form(p,to_light),0.0001,f64::MAX,&mut rec){
-            let light_cos_theta = Vec3::dot(to_light,rec.normal.unwrap());
-            if light_cos_theta < 0.0{
-                return None
-            }
-            let da = (self.x1-self.x0) * (self.z1-self.z0);
-            let distance = to_light.length_squared();
-            distance / ( da * light_cos_theta )
+    fn pdf_value(&self,rec:&mut HitRecorder, p: Point3, to_light: Vec3) -> f64 {
+        if !self.hit(Ray::form(p,to_light),0.0001,f64::MAX,rec){ return 0.0;}
+        let light_cos_theta = to_light.unit_vector().y;
+        if light_cos_theta < 0.0{
+            return 0.0
         }
-       None
+        let da = (self.x1-self.x0) * (self.z1-self.z0);
+        let distance = to_light.length_squared();
+        return distance / ( da * light_cos_theta )
     }
 
     fn random_sample(&self) -> Vec3 {
@@ -453,9 +453,10 @@ impl Hittable for YzRect{
         }
     }
 
-    fn pdf_value(&self, p: Point3, dir: Vec3) -> Option<f64> {
+    fn pdf_value(&self, rec: &mut HitRecorder, p: Point3, dir: Vec3) -> f64 {
         todo!()
     }
+
 
     fn random_sample(&self) -> Vec3 {
         todo!()
@@ -522,7 +523,7 @@ impl Hittable for MBox{
             }
     }
 
-    fn pdf_value(&self, p: Point3, dir: Vec3) -> Option<f64> {
+    fn pdf_value(&self, rec: &mut HitRecorder, p: Point3, dir: Vec3) -> f64 {
         todo!()
     }
 
@@ -624,9 +625,10 @@ impl Hittable for YRotate{
         }
     }
 
-    fn pdf_value(&self, p: Point3, dir: Vec3) -> Option<f64> {
+    fn pdf_value(&self, rec: &mut HitRecorder, p: Point3, dir: Vec3) -> f64 {
         todo!()
     }
+
 
     fn random_sample(&self) -> Vec3 {
         todo!()
@@ -677,5 +679,13 @@ impl Hittable for Translate{
 
     fn get_center_point(&self, a: &Axis) -> f64 {
         self.obj_ptr.clone().unwrap().get_center_point(a) + a.call(self.offset)
+    }
+
+    fn pdf_value(&self, rec: &mut HitRecorder, p: Point3, dir: Vec3) -> f64 {
+        todo!()
+    }
+
+    fn random_sample(&self) -> Vec3 {
+        todo!()
     }
 }
