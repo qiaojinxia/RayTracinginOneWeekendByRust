@@ -63,7 +63,7 @@ fn ray_color(ray:Ray,background:&Color,sences_manager:Arc<SencesManger>,depth:i3
                 let mut l_in_dir  = Color::new();
                 let attenuation = rec.material.clone().unwrap().get_color(&rec);
                 let material = rec.material.clone().unwrap();
-                let cos_theta = Vec3::dot(rec.normal.unwrap() ,ray.unwrap().direction());
+                let cos_theta = f64::max(Vec3::dot(rec.normal.unwrap() ,ray.unwrap().direction()),0.0);
                 match sences_manager.light() {
                     None => {}
                     Some(light) => {
@@ -155,7 +155,7 @@ fn main() {
             sences_manager = cornell_box();
             aspect_ratio = 1.0;
             image_width = 500;
-            samples_per_pixel = 500;
+            samples_per_pixel = 100;
             background = point3!(0,0,0);
             lookfrom =  point3!(278, 278, -800);
             lookat =  point3!(278, 278, 0);
