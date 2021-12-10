@@ -73,10 +73,9 @@ fn ray_color(ray:Ray,background:&Color,sences_manager:Arc<SencesManger>,depth:i3
                         let mut light_rec = HitRecorder::new();
                         let pdf_light = light.pdf_value(light_rec.borrow_mut(),rec.p.unwrap(),to_light);
                         if pdf_light > 0.00001{
-                            let light_emitted= light_rec.material.clone().unwrap().emitted(light_rec.u,light_rec.v,light_rec.p.unwrap());
                             let brdf = material.
                                 scattering_pdf(ray.unwrap().borrow(),rec.borrow(),ray_light.borrow());
-                            l_in_dir =  attenuation * brdf * light_emitted * cos_theta / pdf_light;
+                            l_in_dir =  attenuation * brdf * ray_color(ray_light, background,sences_manager.clone(), 0) * cos_theta / pdf_light;
                         }
                     }
                 }
@@ -86,10 +85,16 @@ fn ray_color(ray:Ray,background:&Color,sences_manager:Arc<SencesManger>,depth:i3
                 if rand_range_f64(0.0,1.0) > 0.8 {
                     return l_in_dir;
                 }
+                let l_dir;
                 //对间接光照进行采样 进行积分
-                let l_dir = emitted + attenuation * material.
-                    scattering_pdf(ray.unwrap().borrow(),rec.borrow(),scattered.borrow()) *
-                    ray_color(scattered, background,sences_manager, depth - 1) * cos_theta / pdf / 0.8;
+                if rec.is_specular {
+                    l_dir =  attenuation *
+                        ray_color(scattered, background,sences_manager, depth - 1);
+                }else{
+                    l_dir = emitted + attenuation * material.
+                        scattering_pdf(ray.unwrap().borrow(),rec.borrow(),scattered.borrow()) *
+                        ray_color(scattered, background,sences_manager, depth - 1) * cos_theta / pdf / 0.8;
+                }
 
                 l_in_dir + l_dir
             }
@@ -155,7 +160,7 @@ fn main() {
             sences_manager = cornell_box();
             aspect_ratio = 1.0;
             image_width = 500;
-            samples_per_pixel = 100;
+            samples_per_pixel = 1000;
             background = point3!(0,0,0);
             lookfrom =  point3!(278, 278, -800);
             lookat =  point3!(278, 278, 0);

@@ -16,6 +16,7 @@ pub(crate) struct HitRecorder {
     pub(crate) u:f64,
     pub(crate) v:f64,
     pub(crate) front_face:bool,
+    pub(crate) is_specular:bool,
 }
 
 pub(crate) trait Hittable:Send+ Sync +Debug  {
@@ -36,7 +37,8 @@ impl HitRecorder{
             t: 0.0,
             u: 0.0,
             v: 0.0,
-            front_face: false
+            front_face: false,
+            is_specular: false
         }
     }
     pub(crate) fn set_face_normal(&mut self, ray:Ray, outward_normal:Vec3){

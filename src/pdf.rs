@@ -5,6 +5,10 @@ trait Pdf{
     fn generate() -> Vec3;
 }
 
+struct mixture_pdf {
+
+}
+
 struct cosine_pdf{
 
 }

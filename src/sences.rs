@@ -130,6 +130,8 @@ pub(crate) fn cornell_box() -> Arc<SencesManger>{
     let mut objs:Vec<Arc<dyn Hittable>> = vec![];
     let red   = Arc::new(Lambertian::form_color(0.65, 0.05, 0.05));
     let white = Arc::new(Lambertian::form_color(0.73, 0.73, 0.73));
+    let gloden = Arc::new(Metal::form(242.0/255.0, 192.0/255.0, 86.0/255.0,0.7));
+    let glass = Arc::new(Dielectric::form(0.7));
     let green = Arc::new(Lambertian::form_color(0.12, 0.45, 0.15));
 
     objs.push(Arc::new(YzRect::form(0.0, 555.0, 0.0, 555.0, 555.0, green.clone())));
@@ -143,19 +145,22 @@ pub(crate) fn cornell_box() -> Arc<SencesManger>{
     // objs.push(Arc::new(MBox::form(point3!(265.0, 0.0, 295.0), point3!(430.0, 330.0, 460.0), white.clone())));
 
 
-    let box1 = Arc::new(MBox::form(point3!(0, 0, 0), point3!(165, 330, 165), white.clone()));
+    let box1 = Arc::new(MBox::form(point3!(0, 0, 0), point3!(165, 330, 165), gloden.clone()));
     let ro_box1 = Arc::new(YRotate::form(box1,15.0));
     let box1 = Arc::new(Translate::form(ro_box1, vec3!(265,0,295)));
     objs.push(box1);
-    let box2 = Arc::new(MBox::form(point3!(0, 0, 0), point3!(165,165,165), white.clone()));
-    let ro_box2 = Arc::new(YRotate::form(box2,-18.0));
-    let box2 = Arc::new(Translate::form(ro_box2, vec3!(130,0,65)));
-
-    objs.push(box2);
+    // let box2 = Arc::new(MBox::form(point3!(0, 0, 0), point3!(165,165,165), glass.clone()));
+    // let ro_box2 = Arc::new(YRotate::form(box2,-18.0));
+    // let box2 = Arc::new(Translate::form(ro_box2, vec3!(130,0,65)));
+    //
+    // objs.push(box2);
 
     let light = Arc::new(DiffuseLight::form(Color::form(15.0, 15.0, 15.0)));
     let light_ref = Arc::new(XzRect::form(213.0, 343.0, 227.0, 332.0, 554.0, light));
     objs.push(light_ref.clone());
+
+    let sphere = Arc::new(Sphere::form(point3!(190.0,90.0,190.0),90.0,glass));
+    objs.push(sphere);
     SencesManger::form(Some(light_ref.clone()),objs)
 }
 

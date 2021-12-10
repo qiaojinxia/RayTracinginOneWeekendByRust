@@ -91,6 +91,7 @@ impl Materials for Metal{
         let reflected = Vec3::reflect(ray_in.direction().unit_vector(),rec.normal.unwrap());
         let scattered = Ray::form(rec.p.unwrap(), reflected + Vec3::random_in_unit_sphere() * self.fuzz  );
         let x = Vec3::dot(scattered.direction(),rec.normal.unwrap());
+        rec.is_specular = true;
         if  x > 0.0{
            return Some(scattered);
         }
@@ -98,7 +99,8 @@ impl Materials for Metal{
     }
 
     fn scattering_pdf(&self,r_in: &Ray, rec: &HitRecorder, scattered: &Ray) -> f64 {
-        todo!()
+        //计算辐射量 单位能量 / 单位面积
+        1.0
     }
 
     fn get_color(&self,_rec:&HitRecorder) -> Color {
@@ -138,16 +140,16 @@ impl Materials for Dielectric{
         let direction;
         if cannot_refract || Self::reflectance(cos_theta, refraction_ratio) > rand_f64() {
             direction = Vec3::reflect(unit_direction, rec.normal.unwrap());
-
         }else{
              direction = Vec3::refract(unit_direction,
                                          rec.normal.unwrap(),refraction_ratio);
         }
+        rec.is_specular = true;
         Some(Ray::form(rec.p.unwrap(),direction))
     }
 
     fn scattering_pdf(&self,r_in: &Ray, rec: &HitRecorder, scattered: &Ray) -> f64 {
-        todo!()
+        1.0
     }
 
     fn get_color(&self,_rec:&HitRecorder) -> Color {
@@ -155,7 +157,7 @@ impl Materials for Dielectric{
     }
 
     fn emitted(&self,_u: f64, _v: f64, _p: Point3) -> Color {
-        todo!()
+        Color::new()
     }
 }
 

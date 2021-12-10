@@ -372,7 +372,9 @@ impl Hittable for XzRect{
     }
 
     fn pdf_value(&self,rec:&mut HitRecorder, p: Point3, to_light: Vec3) -> f64 {
-        if !self.hit(Ray::form(p,to_light),0.0001,f64::MAX,rec){ return 0.0; }
+        if !self.hit(Ray::form(p,to_light.unit_vector()),0.0001,f64::MAX,rec){
+            return 0.0;
+        }
         let light_cos_theta = to_light.unit_vector().y;
         if light_cos_theta < 0.0{
             return 0.0
