@@ -6,7 +6,15 @@ pub(crate) fn write_color(std: &mut File, color:Color,samples_per_pixel:i32){
     let mut r = color.x;
     let mut g = color.y;
     let mut b = color.z;
-
+    if r == f64::NAN{
+        r = 0.0
+    }
+    if g == f64::NAN{
+        g = 0.0
+    }
+    if b == f64::NAN{
+        b = 0.0
+    }
     let scale = 1.0 / samples_per_pixel as f64 ;
 
     r =(scale * r).sqrt();

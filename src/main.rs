@@ -160,7 +160,7 @@ fn main() {
             sences_manager = cornell_box();
             aspect_ratio = 1.0;
             image_width = 500;
-            samples_per_pixel = 1000;
+            samples_per_pixel = 60000;
             background = point3!(0,0,0);
             lookfrom =  point3!(278, 278, -800);
             lookat =  point3!(278, 278, 0);

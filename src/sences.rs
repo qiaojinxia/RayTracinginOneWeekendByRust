@@ -159,7 +159,7 @@ pub(crate) fn cornell_box() -> Arc<SencesManger>{
     let light_ref = Arc::new(XzRect::form(213.0, 343.0, 227.0, 332.0, 554.0, light));
     objs.push(light_ref.clone());
 
-    let sphere = Arc::new(Sphere::form(point3!(190.0,90.0,190.0),90.0,glass));
+    let sphere = Arc::new(Sphere::form(point3!(190.0,90.0,190.0),-90.0,glass));
     objs.push(sphere);
     SencesManger::form(Some(light_ref.clone()),objs)
 }
