@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use crate::bvh::BvhNode;
 use crate::hit::{Hittable, HitRecorder};
 use crate::ray::{Point3, Ray};
 use crate::shape::AABB;
@@ -22,6 +23,7 @@ impl HittableList{
             self.objects.push(obj.clone());
         }
     }
+
 }
 
 
@@ -54,7 +56,9 @@ impl Hittable for HittableList{
     }
 
     fn get_center_point(&self, _a: &Axis) -> f64 {
-        todo!()
+        let mut bounding_box = self.bounding_box().unwrap();
+        let c_point = bounding_box.maximum - bounding_box.minimum;
+        _a.call(c_point)
     }
 
     fn pdf_value(&self, rec: &mut HitRecorder, p: Point3, dir: Vec3) -> f64 {

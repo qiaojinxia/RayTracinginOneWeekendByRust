@@ -534,6 +534,7 @@ impl Hittable for MBox{
     }
 }
 
+
 pub(crate) struct YRotate{
     obj_ptr:Option<Arc<dyn Hittable>>,
     sin_theta:f64,

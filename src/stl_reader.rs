@@ -1,12 +1,14 @@
 use std::fs::File;
 use std::io::Read;
-use crate::common::{ parse_i32_little_endian, parse_f32_little_endian};
+use crate::common::{parse_i32_little_endian, parse_f32_little_endian, degrees_to_radians};
 use crate::vec3::Vec3;
 use std::sync::Arc;
 use crate::shape::Triangle;
 use crate::hit::Hittable;
 use crate::material::Materials;
 use crate::{point3};
+use crate::bvh::BvhNode;
+use crate::hittable_list::HittableList;
 use crate::Point3;
 trait Reader{
     fn reader_next();
@@ -44,9 +46,11 @@ impl StlReader{
         self.index += 2;
     }
 
-    pub(crate) fn raed_all_shape_info(&mut self,objs:&mut Vec<Arc<dyn Hittable>>,material:Arc<dyn Materials>,angle:f64){
+    pub(crate) fn raed_all_shape_info(&mut self,material:Arc<dyn Materials>) -> Option<BvhNode>{
+        let mut angle = degrees_to_radians(-80.0);
         let angle_num = self.read_angle_num();
         println!("三角形数量:{}",angle_num);
+        let mut obj:Vec<Arc<dyn Hittable>> = vec![];
         for _i in 0..angle_num{
             let _n_x = self.read_angle_point();
             let _n_y = self.read_angle_point();
@@ -63,15 +67,17 @@ impl StlReader{
             let t3_y = self.read_angle_point();
             let t3_z = self.read_angle_point();
             let mut p1 = point3!(t1_x,t1_y,t1_z) ;
-            let mut p2 = point3!(t2_x, t2_y, t2_z) ;
+            let mut p2 = point3!(t2_x, t2_y, t2_z);
             let mut p3 = point3!(t3_x, t3_y, t3_z);
             let sin_theta = angle.sin();
             let cos_theta = angle.cos();
             p1 = Vec3::rotate_x(p1,angle.sin(),angle.cos());
             p2 = Vec3::rotate_x(p2,sin_theta,cos_theta);
             p3 = Vec3::rotate_x(p3,sin_theta,cos_theta);
-            objs.push(Arc::new(Triangle::form(p1, p2,p3,material.clone())));
+            obj.push(Arc::new(Triangle::form(p1 * 5.0, p2 * 5.0,p3 * 5.0,material.clone())));
             self.read_angle_info();
         }
+        let bvh_node = BvhNode::form(obj.as_mut_slice(),0.0001,f64::MAX);
+        bvh_node
     }
 }
