@@ -2,7 +2,7 @@ use std::io::Write;
 use crate::{Color};
 use std::fs::File;
 
-pub(crate) fn write_color(std: &mut File, color:Color,samples_per_pixel:i32){
+pub(crate) fn write_color( color:Color,samples_per_pixel:i32) -> Color{
     let mut r = color.x;
     let mut g = color.y;
     let mut b = color.z;
@@ -21,8 +21,9 @@ pub(crate) fn write_color(std: &mut File, color:Color,samples_per_pixel:i32){
     g =(scale * g).sqrt();
     b =(scale * b).sqrt();
 
+    Color::set(r,g,b)
 
-    let s = format!("{}",Color::form(r,g,b));
-
-    let _ = std.write(s.as_bytes());
+    // let s = format!("{}",Color::form(r,g,b));
+    //
+    // let _ = std.write(s.as_bytes());
 }

@@ -14,6 +14,8 @@ mod texture;
 mod sences;
 mod macros;
 mod pdf;
+mod windows;
+
 use std::fmt::{Display, Formatter};
 use crate::vec3::Vec3;
 use std::{ thread};
@@ -21,12 +23,15 @@ use crate::draw::write_color;
 use std::borrow::{BorrowMut, Borrow};
 use crate::ray::{Point3, Ray};
 use crate::hit::{HitRecorder};
-use std::sync::{Arc, mpsc};
+use std::sync::{Arc, mpsc, Mutex, RwLock};
 use crate::camera::Camera;
 use crate::common::{rand_f64, clamp, rand_range_f64};
 use std::time::Instant;
 use crate::sences::{two_spheres, random_scene, two_perlin_spheres, simple_light, cornell_box, SencesManger};
 use std::f64::consts::PI;
+use std::fs::File;
+use std::io::Write;
+use core::time;
 
 type Color = Vec3;
 
@@ -171,7 +176,9 @@ fn main() {
     let image_height = (image_width as f64 / aspect_ratio) as i32;
     let max_depth = 100;
     let dist_to_focus = 10.0;
-
+    let collected_iterator: Vec<i32> = (0..image_width*image_height).collect();
+    let mut pixel_buffer = Arc::new(RwLock::new(vec![Color::new();image_width as usize * image_height as usize]));
+    let mut render_times = Arc::new(RwLock::new(1));
     //Camera
     let camera_arc = Arc::new(Camera::new(
         lookfrom, lookat, Vec3::form(0.0,1.0,0.0), vfov, aspect_ratio, aperture, dist_to_focus));
@@ -181,13 +188,14 @@ fn main() {
     // let mut stl = StlReader::new_stl_reader("cat.stl".to_string());
     // let x= Arc::new(Metal::form(0.949,0.7529,0.3372,0.3));
     // stl.raed_all_shape_info(&mut objs,x,300.0);
-
-    let count = 10; //图形渲染线程数
+    let count = 1; //图形渲染线程数
     let (tx, rx) = mpsc::channel();
     for thread_n in  0 .. count{
         let camera_t = camera_arc.clone();
-        let chan = tx.clone();
         let sences_t = sences_manager.clone();
+        let arc_pixel_buffer = pixel_buffer.clone();
+        let s_chan = tx.clone();
+        let global_render_times = render_times.clone();
         let _t = thread::spawn(move ||{
             let mut file = std::fs::File::create(format!("file{}",thread_n)).expect("create failed");
             let per_num = (image_height as f32 / count as f32).ceil() as i32;
@@ -196,24 +204,53 @@ fn main() {
             if render_segment_end > image_height{
                 render_segment_end = image_height
             }
-            for  j in render_segment_start .. render_segment_end{
-                for  i in 0.. image_width {
-                    let mut pixel_color = Color::new();
-                    //往一个像素 偏移非常小的dw方向上 发射不同的光 采样
-                    for _s in  0 .. samples_per_pixel{
-                        let u = (i as f64 + rand_f64()) / (image_width -1) as f64;
-                        let v = (((image_height - 1) - j)  as f64 + rand_f64()) / (image_height - 1) as f64 ;
-                        let ray = camera_t.get_ray(u,v);
-                        pixel_color += ray_color(ray,&background,sences_t.clone(),max_depth);
-                    }
-                    write_color(file.borrow_mut(), pixel_color,samples_per_pixel);
+        for count in  0 .. samples_per_pixel{
+            loop{
+                if count < *global_render_times.read().unwrap(){
+                    break
                 }
+                thread::sleep(time::Duration::from_millis(10));
             }
-            let _ = chan.send(());
+            let mut tmp_pixel_buffer = vec![];
+            for row in render_segment_start .. render_segment_end{
+                for col in 0.. image_width {
+                    //往一个像素 偏移非常小的dw方向上 发射不同的光 采样
+                        let u = (col as f64 + rand_f64()) / (image_width -1) as f64;
+                        let v = (((image_height - 1) - row)  as f64 + rand_f64()) / (image_height - 1) as f64 ;
+                        let ray = camera_t.get_ray(u,v);
+                        let mut pixel_color = ray_color(ray,&background,sences_t.clone(),max_depth);
+                        let mut pixel_buffer = arc_pixel_buffer.read().unwrap();
+                        let pixel_index = row * image_width  + col;
+                        let sum_pixel = pixel_buffer[pixel_index as usize] + pixel_color;
+                        tmp_pixel_buffer.push(sum_pixel);
+                    }
+                }
+                let mut c = 0;
+                let mut pixel_buffer = arc_pixel_buffer.write().unwrap();
+                for pixel in  tmp_pixel_buffer{
+                    pixel_buffer[(render_segment_start * image_width + c) as usize ] = pixel;
+                    c += 1;
+                }
+                s_chan.send(());
+            }
         });
     }
-    for _ in 0..count {
-        let _ = rx.recv();
+    loop{
+        for _ in 0..count{
+            rx.recv();
+        }
+        let reader = pixel_buffer.write().unwrap();
+        let mut output: File = File::create("image.ppm").unwrap();
+        let mut render_times = render_times.write().unwrap();
+        output.write("P3 \n500 500 \n255\n".as_ref());
+        for c in reader.iter(){
+            let d_pixel = write_color(*c,*render_times);
+            let s = format!("{}",d_pixel);
+            output.write(s.as_bytes());
+        }
+        *render_times += 1;
+
     }
+    // window.run_loop(windows::MyWindowHandler{ Buffer:pixel_buffer.clone(), TX: rx });
     println!("time cost: {:?} ms",start.elapsed().as_millis());
 }
